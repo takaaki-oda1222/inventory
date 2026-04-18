@@ -920,9 +920,11 @@ function renderCashflow() {
 
   // Catawiki breakdown
   const cItems = soldItems.filter(i=>i.soldPlatform==='Catawiki');
-  const eurGross = cItems.reduce((s,i)=>(s+(i.soldPriceEur||0)+(i.shippingIncomeEur||0)),0);
-  const eurFee = eurGross * CATAWIKI_FEE / 100;
-  const eurNet = eurGross - eurFee;
+  const eurSoldGross = cItems.reduce((s,i)=>s+(i.soldPriceEur||0),0);
+  const eurShipping = cItems.reduce((s,i)=>s+(i.shippingIncomeEur||0),0);
+  const eurFee = cItems.reduce((s,i)=>s+getCataFee(i.soldPriceEur||0),0);
+  const eurGross = eurSoldGross + eurShipping;
+  const eurNet = eurSoldGross - eurFee + eurShipping;
   const eurNetJpy = cItems.reduce((s,i)=>s+getSoldJpy(i),0);
   document.getElementById('cf-catawiki').innerHTML = `
     <div class="cf-grid">
@@ -1196,8 +1198,8 @@ function updateAddPreview() {
     const soldDate = document.getElementById('add-soldDate').value;
     const ym = soldDate ? soldDate.slice(0,7) : '';
     const rate = (ym && state.monthlyRates[ym] !== undefined) ? state.monthlyRates[ym] : defaultRate;
-    const gross = price + incEur;
-    const netEur = gross * (1 - CATAWIKI_FEE/100);
+    const fee = getCataFee(price);
+    const netEur = (price - fee) + incEur;
     soldJpy = Math.round(netEur * rate);
   }
   const profit = soldJpy - cost - shipping;
