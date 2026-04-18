@@ -614,6 +614,19 @@
             <div class="ex-desc">古物台帳用フォーマットで出力します</div>
             <button class="btn btn-secondary btn-sm" onclick="exportCSV('ledger')">ダウンロード</button>
           </div>
+          <div class="export-card">
+            <div class="ex-title">データをエクスポート（JSON）</div>
+            <div class="ex-desc">すべてのデータをJSONファイルとしてバックアップします</div>
+            <button class="btn btn-secondary btn-sm" onclick="exportJSON()">ダウンロード</button>
+          </div>
+          <div class="export-card">
+            <div class="ex-title">データをインポート（JSON）</div>
+            <div class="ex-desc">JSONファイルを読み込んでデータを復元します（現在のデータは上書きされます）</div>
+            <label class="btn btn-secondary btn-sm" style="cursor:pointer; display:inline-block">
+              ファイルを選択
+              <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -1497,6 +1510,45 @@ function exportCSV(mode) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ────────────────────────────────────────────────────────────
+// JSON Export / Import
+// ────────────────────────────────────────────────────────────
+function exportJSON() {
+  const raw = localStorage.getItem(STORAGE_KEY) || '{}';
+  const today = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([raw], { type: 'application/json;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `inventory_backup_${today}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!confirm('現在のデータを上書きします。よろしいですか？')) {
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      load();
+      renderAll();
+      alert('インポートが完了しました。');
+    } catch(err) {
+      alert('JSONファイルの読み込みに失敗しました。\n' + err.message);
+    } finally {
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ────────────────────────────────────────────────────────────
