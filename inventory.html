@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在庫管理システム v1.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+    background: var(--color-background-secondary, #F5F5F5);
+    color: var(--color-text-primary, #1A1A1A);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Layout ── */
+  .app { max-width: 1200px; margin: 0 auto; padding: 16px; }
+
+  /* ── Summary Cards ── */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 700px) { .summary-bar { grid-template-columns: repeat(2,1fr); } }
+  .summary-card {
+    background: var(--color-background-primary, #fff);
+    border: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 16px;
+  }
+  .summary-card .label {
+    font-size: 12px;
+    color: var(--color-text-secondary, #666);
+    margin-bottom: 4px;
+  }
+  .summary-card .value { font-size: 22px; font-weight: 700; }
+  .summary-card .sub { font-size: 12px; color: var(--color-text-secondary, #666); margin-top: 2px; }
+  .profit-pos { color: #0F6E56; }
+  .profit-neg { color: #A32D2D; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--color-border-tertiary, #E0E0E0);
+    margin-bottom: 16px;
+    background: var(--color-background-primary, #fff);
+    border-radius: var(--border-radius-lg, 12px) var(--border-radius-lg, 12px) 0 0;
+    padding: 0 8px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--color-text-secondary, #666);
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .tab-btn.active {
+    color: var(--color-text-primary, #1A1A1A);
+    font-weight: 500;
+    border-bottom: 2px solid var(--color-text-primary, #1A1A1A);
+  }
+
+  /* ── Tab Panels ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--color-background-primary, #fff);
+    border: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Filters ── */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filters select, .filters input {
+    padding: 6px 10px;
+    border: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+    border-radius: var(--border-radius-md, 8px);
+    background: var(--color-background-primary, #fff);
+    color: var(--color-text-primary, #1A1A1A);
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    background: var(--color-background-secondary, #F5F5F5);
+    border-bottom: 1px solid var(--color-border-tertiary, #E0E0E0);
+    color: var(--color-text-secondary, #666);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--color-background-secondary, #F5F5F5); }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--border-radius-md, 8px);
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .badge-在庫      { background:#E1F5EE; color:#0F6E56; }
+  .badge-出品中    { background:#E6F1FB; color:#185FA5; }
+  .badge-売却済    { background:#EAF3DE; color:#3B6D11; }
+  .badge-Mercari   { background:#FBEAF0; color:#993556; }
+  .badge-Catawiki  { background:#EEEDFE; color:#534AB7; }
+  .badge-両方      { background:#FAEEDA; color:#854F0B; }
+
+  /* ── Forms ── */
+  .form-section { margin-bottom: 20px; }
+  .form-section-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-border-tertiary, #E0E0E0);
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; color: var(--color-text-secondary, #666); font-weight: 500; }
+  input, select, textarea {
+    padding: 8px 10px;
+    border: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+    border-radius: var(--border-radius-md, 8px);
+    background: var(--color-background-primary, #fff);
+    color: var(--color-text-primary, #1A1A1A);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--color-border-secondary, #999);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 8px 16px;
+    border-radius: var(--border-radius-md, 8px);
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--color-text-primary, #1A1A1A); color: var(--color-background-primary, #fff); }
+  .btn-secondary {
+    background: var(--color-background-secondary, #F5F5F5);
+    color: var(--color-text-primary, #1A1A1A);
+    border: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+  }
+  .btn-danger { background: #A32D2D; color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* ── Hint ── */
+  .hint {
+    background: var(--color-background-secondary, #F5F5F5);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--color-text-secondary, #666);
+    margin-top: 4px;
+  }
+  .preview-box {
+    background: var(--color-background-secondary, #F5F5F5);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 12px 16px;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  /* ── Rate Tab ── */
+  .rate-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+  }
+  .rate-row:last-child { border-bottom: none; }
+  .rate-month { font-weight: 500; min-width: 90px; }
+  .rate-input { width: 100px; }
+
+  /* ── Cashflow ── */
+  .cf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 600px) { .cf-grid { grid-template-columns: 1fr; } }
+  .cf-card {
+    background: var(--color-background-secondary, #F5F5F5);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 12px 16px;
+  }
+  .cf-card .cf-label { font-size: 11px; color: var(--color-text-secondary, #666); }
+  .cf-card .cf-val { font-size: 18px; font-weight: 700; }
+  .section-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+
+  /* ── Summary Tab ── */
+  .month-card {
+    background: var(--color-background-primary, #fff);
+    border: 0.5px solid var(--color-border-tertiary, #E0E0E0);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .month-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .month-card-header .month-title { font-weight: 600; }
+  .month-card-header .rate-note { font-size: 12px; color: var(--color-text-secondary, #666); }
+  .month-sub-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  @media (max-width: 600px) { .month-sub-grid { grid-template-columns: repeat(2,1fr); } }
+  .month-sub-card {
+    background: var(--color-background-secondary, #F5F5F5);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 8px 12px;
+  }
+  .month-sub-card .sc-label { font-size: 11px; color: var(--color-text-secondary, #666); }
+  .month-sub-card .sc-val { font-size: 15px; font-weight: 600; }
+
+  /* ── Faux Modal Overlay ── */
+  .modal-overlay {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    min-height: 500px;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 40px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--color-background-primary, #fff);
+    border-radius: var(--border-radius-lg, 12px);
+    padding: 20px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    z-index: 101;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  #app-wrapper { position: relative; }
+
+  /* ── Export ── */
+  .export-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+  @media (max-width: 500px) { .export-grid { grid-template-columns: 1fr; } }
+  .export-card {
+    background: var(--color-background-secondary, #F5F5F5);
+    border-radius: var(--border-radius-md, 8px);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .export-card .ex-title { font-weight: 600; }
+  .export-card .ex-desc { font-size: 12px; color: var(--color-text-secondary, #666); }
+
+  /* ── Chart Legend ── */
+  .chart-legend { display: flex; gap: 16px; margin-bottom: 8px; font-size: 12px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 4px; }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 32px; color: var(--color-text-secondary, #666); font-size: 13px; }
+
+  /* ── Daily table ── */
+  .mode-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div id="app-wrapper">
+  <div class="app">
+
+    <!-- Summary Cards -->
+    <div class="summary-bar" id="summary-bar"></div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="list">商品一覧</button>
+      <button class="tab-btn" data-tab="add">新規追加</button>
+      <button class="tab-btn" data-tab="rates">月別レート</button>
+      <button class="tab-btn" data-tab="cashflow">キャッシュフロー</button>
+      <button class="tab-btn" data-tab="monthly">月次・日次</button>
+      <button class="tab-btn" data-tab="ledger">古物台帳</button>
+      <button class="tab-btn" data-tab="export">エクスポート</button>
+    </div>
+
+    <!-- Tab: 商品一覧 -->
+    <div class="tab-panel active" id="tab-list">
+      <div class="card">
+        <div class="filters">
+          <select id="filter-status">
+            <option value="">すべてのステータス</option>
+            <option value="在庫">在庫</option>
+            <option value="出品中">出品中</option>
+            <option value="売却済">売却済</option>
+          </select>
+          <select id="filter-platform">
+            <option value="">すべてのPF</option>
+            <option value="Mercari">Mercari</option>
+            <option value="Catawiki">Catawiki</option>
+            <option value="両方">両方</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table id="items-table">
+            <thead>
+              <tr>
+                <th>商品名</th>
+                <th>仕入日</th>
+                <th>販売日</th>
+                <th>仕入値</th>
+                <th>プラットフォーム</th>
+                <th>売値(円)</th>
+                <th>適用レート</th>
+                <th>発送費</th>
+                <th>利益</th>
+                <th>回転日数</th>
+                <th>状態</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: 新規追加 -->
+    <div class="tab-panel" id="tab-add">
+      <div class="card">
+        <div class="form-section">
+          <div class="form-section-title">仕入れ情報</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>商品名 <span style="color:#A32D2D">*</span></label>
+              <input type="text" id="add-name" placeholder="例: セイコー アンティーク時計">
+            </div>
+            <div class="form-group">
+              <label>仕入先</label>
+              <select id="add-source">
+                <option>Yahoo Auctions</option>
+                <option>Mercari</option>
+                <option>Hard Off</option>
+                <option>フリマ</option>
+                <option>その他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>仕入日</label>
+              <input type="date" id="add-buyDate">
+            </div>
+            <div class="form-group">
+              <label>仕入値（円）</label>
+              <input type="number" id="add-cost" min="0" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>カテゴリ</label>
+              <select id="add-category">
+                <option>時計</option>
+                <option>鍔（つば）</option>
+                <option>着物・羽織</option>
+                <option>ジュエリー</option>
+                <option>陶磁器</option>
+                <option>その他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>状態</label>
+              <select id="add-condition">
+                <option>良好</option>
+                <option>普通</option>
+                <option>ジャンク</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>仕入先情報（古物台帳用: 氏名・住所・身分証など）</label>
+              <textarea id="add-seller" placeholder="例: 山田太郎 / 東京都○○区○○1-2-3 / 運転免許証確認済"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">出品情報</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>出品プラットフォーム</label>
+              <select id="add-platform">
+                <option value="">未出品</option>
+                <option value="Mercari">Mercari</option>
+                <option value="Catawiki">Catawiki</option>
+                <option value="両方">両方</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>出品日</label>
+              <input type="date" id="add-listDate">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">販売情報</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>販売プラットフォーム</label>
+              <select id="add-soldPlatform" onchange="onAddSoldPlatformChange()">
+                <option value="">未販売</option>
+                <option value="Mercari">Mercari</option>
+                <option value="ヤフオク">ヤフオク</option>
+                <option value="Catawiki">Catawiki</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>販売日</label>
+              <input type="date" id="add-soldDate" oninput="onAddSoldDateChange()">
+              <div id="add-rate-hint" class="hint" style="display:none"></div>
+            </div>
+            <div class="form-group" id="field-soldPriceJpy" style="display:none">
+              <label>売値（¥）</label>
+              <input type="number" id="add-soldPriceJpy" min="0" placeholder="0" oninput="updateAddPreview()">
+            </div>
+            <div class="form-group" id="field-mercari-fee" style="display:none">
+              <label>手数料（%）</label>
+              <input type="number" id="add-fee" value="10" min="0" max="100" step="0.1" oninput="updateAddPreview()">
+            </div>
+            <div class="form-group" id="field-soldPriceEur" style="display:none">
+              <label>売値（EUR）</label>
+              <input type="number" id="add-soldPriceEur" min="0" step="0.01" placeholder="0.00" oninput="updateAddPreview()">
+            </div>
+            <div class="form-group" id="field-shippingIncomeEur" style="display:none">
+              <label>もらう送料（EUR）</label>
+              <input type="number" id="add-shippingIncomeEur" value="0" min="0" step="0.01" oninput="updateAddPreview()">
+            </div>
+            <div class="form-group" id="field-catawiki-fee-note" style="display:none">
+              <label>Catawiki手数料</label>
+              <input type="text" value="12.5%（固定）" disabled>
+            </div>
+            <div class="form-group">
+              <label>発送費（¥）</label>
+              <input type="number" id="add-shippingCost" value="0" min="0" placeholder="0" oninput="updateAddPreview()">
+            </div>
+            <div class="form-group full">
+              <label>メモ</label>
+              <input type="text" id="add-note" placeholder="任意メモ">
+            </div>
+          </div>
+          <div id="add-preview" class="preview-box" style="display:none"></div>
+        </div>
+
+        <button class="btn btn-primary" onclick="submitAdd()">追加する</button>
+      </div>
+    </div>
+
+    <!-- Tab: 月別レート -->
+    <div class="tab-panel" id="tab-rates">
+      <div class="card">
+        <div class="form-group" style="max-width:240px; margin-bottom:16px">
+          <label>デフォルトレート（円/EUR）</label>
+          <input type="number" id="default-rate" value="163" min="1" step="0.1" oninput="onDefaultRateChange()">
+        </div>
+        <div class="section-title">月別レート</div>
+        <div id="rates-list"></div>
+        <div style="margin-top:12px">
+          <button class="btn btn-secondary" onclick="addRateRow()">＋ 月を追加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: キャッシュフロー -->
+    <div class="tab-panel" id="tab-cashflow">
+      <div class="card">
+        <div class="section-title">全体サマリー</div>
+        <div class="cf-grid" id="cf-grid-1"></div>
+        <div class="cf-grid" id="cf-grid-2"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Catawiki EUR内訳</div>
+        <div id="cf-catawiki"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Mercari JPY内訳</div>
+        <div id="cf-mercari"></div>
+      </div>
+      <div class="card">
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:#B5D4F4"></span>売上</span>
+          <span><span class="legend-dot" style="background:#9FE1CB"></span>利益</span>
+        </div>
+        <canvas id="cf-chart" height="200"></canvas>
+        <div id="cf-monthly-breakdown"></div>
+      </div>
+    </div>
+
+    <!-- Tab: 月次・日次 -->
+    <div class="tab-panel" id="tab-monthly">
+      <div class="mode-toggle">
+        <button class="btn btn-primary" id="btn-mode-monthly" onclick="setMonthlyMode('monthly')">月次</button>
+        <button class="btn btn-secondary" id="btn-mode-daily" onclick="setMonthlyMode('daily')">日次</button>
+      </div>
+      <div id="monthly-view"></div>
+      <div id="daily-view" style="display:none">
+        <div class="card">
+          <div class="form-group" style="max-width:200px; margin-bottom:12px">
+            <label>対象月</label>
+            <input type="month" id="daily-month-input" oninput="renderDailyView()">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>仕入コスト(¥)</th>
+                  <th>販売件数</th>
+                  <th>売上(¥)</th>
+                  <th>利益(¥)</th>
+                </tr>
+              </thead>
+              <tbody id="daily-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: 古物台帳 -->
+    <div class="tab-panel" id="tab-ledger">
+      <div class="card">
+        <div class="table-wrap">
+          <table id="ledger-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>取引日</th>
+                <th>品名・特徴</th>
+                <th>カテゴリ</th>
+                <th>取得価格</th>
+                <th>相手方情報</th>
+                <th>処分日</th>
+                <th>処分価格(¥)</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-tbody"></tbody>
+          </table>
+        </div>
+        <p style="font-size:12px; color:var(--color-text-secondary,#666); margin-top:12px">
+          ※ 正式な古物台帳は各都道府県警察署の指定様式に従ってください。本システムは参考記録用です。
+        </p>
+      </div>
+    </div>
+
+    <!-- Tab: エクスポート -->
+    <div class="tab-panel" id="tab-export">
+      <div class="card">
+        <div class="export-grid">
+          <div class="export-card">
+            <div class="ex-title">全件CSV</div>
+            <div class="ex-desc">登録されているすべての商品を出力します</div>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV('all')">ダウンロード</button>
+          </div>
+          <div class="export-card">
+            <div class="ex-title">売却済のみCSV</div>
+            <div class="ex-desc">ステータスが「売却済」の商品のみ出力します</div>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV('sold')">ダウンロード</button>
+          </div>
+          <div class="export-card">
+            <div class="ex-title">在庫・出品中CSV</div>
+            <div class="ex-desc">未販売の商品（在庫・出品中）を出力します</div>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV('unsold')">ダウンロード</button>
+          </div>
+          <div class="export-card">
+            <div class="ex-title">古物台帳形式CSV</div>
+            <div class="ex-desc">古物台帳用フォーマットで出力します</div>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV('ledger')">ダウンロード</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .app -->
+
+  <!-- Faux Modal Overlay -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box" id="modal-box">
+      <div class="modal-title">商品を編集</div>
+      <div id="modal-content"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+        <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+        <button class="btn btn-danger" onclick="deleteItem()">削除</button>
+      </div>
+    </div>
+  </div>
+</div><!-- #app-wrapper -->
+
+<script>
+// ────────────────────────────────────────────────────────────
+// Constants
+// ────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'resale_pro_v3';
+const CATAWIKI_FEE = 12.5;
+const MERCARI_FEE_DEFAULT = 10;
+
+// ────────────────────────────────────────────────────────────
+// State
+// ────────────────────────────────────────────────────────────
+let state = { items: [], monthlyRates: {} };
+let defaultRate = 163;
+let editingIndex = -1;
+let cfChart = null;
+let currentMonthlyMode = 'monthly';
+
+// ────────────────────────────────────────────────────────────
+// Persistence
+// ────────────────────────────────────────────────────────────
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.items = parsed.items || [];
+      state.monthlyRates = parsed.monthlyRates || {};
+    }
+    const dr = localStorage.getItem(STORAGE_KEY + '_defaultRate');
+    if (dr) defaultRate = parseFloat(dr);
+  } catch(e) { console.error('load error', e); }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ items: state.items, monthlyRates: state.monthlyRates }));
+  localStorage.setItem(STORAGE_KEY + '_defaultRate', String(defaultRate));
+}
+
+// ────────────────────────────────────────────────────────────
+// Business Logic
+// ────────────────────────────────────────────────────────────
+function getStatus(item) {
+  if (item.soldPlatform && (item.soldPriceJpy > 0 || item.soldPriceEur > 0)) return '売却済';
+  if (item.platform && item.platform !== '') return '出品中';
+  return '在庫';
+}
+
+function getRateForItem(item) {
+  if (item.soldPlatform === 'Catawiki' && item.soldDate) {
+    const ym = item.soldDate.slice(0, 7);
+    if (state.monthlyRates[ym] !== undefined) return state.monthlyRates[ym];
+  }
+  return defaultRate;
+}
+
+function getCataFee(soldEur) {
+  const pct = soldEur * 0.125;
+  let fixed = 0;
+  if (soldEur >= 1000) fixed = 10;
+  else if (soldEur >= 500) fixed = 5;
+  else if (soldEur >= 300) fixed = 3;
+  else if (soldEur >= 150) fixed = 2;
+  else if (soldEur >= 75)  fixed = 1;
+  else if (soldEur >= 25)  fixed = 0.75;
+  return pct + fixed;
+}
+
+function getSoldJpy(item) {
+  if (item.soldPlatform === 'Catawiki') {
+    const soldEur = item.soldPriceEur || 0;
+    const shippingEur = item.shippingIncomeEur || 0;
+    const fee = getCataFee(soldEur);
+    const netEur = (soldEur - fee) + shippingEur;
+    return Math.round(netEur * getRateForItem(item));
+  }
+  if (item.soldPlatform === 'ヤフオク') {
+    const jpy = item.soldPriceJpy || 0;
+    const fee = item.fee || 8.8;
+    return Math.round(jpy * (1 - fee / 100));
+  }
+  return item.soldPriceJpy || 0;
+}
+
+function calcProfit(item) {
+  if (getStatus(item) !== '売却済') return null;
+  const cost = item.cost || 0;
+  const shipping = item.shippingCost || 0;
+  if (item.soldPlatform === 'Catawiki' || item.soldPlatform === 'ヤフオク') {
+    return getSoldJpy(item) - cost - shipping;
+  }
+  if (item.soldPlatform === 'Mercari') {
+    const fee = item.fee !== undefined ? item.fee : MERCARI_FEE_DEFAULT;
+    const net = Math.round((item.soldPriceJpy || 0) * (1 - fee / 100));
+    return net - cost - shipping;
+  }
+  return null;
+}
+
+function calcTurnover(item) {
+  if (!item.soldDate || !item.buyDate) return null;
+  return Math.round((new Date(item.soldDate) - new Date(item.buyDate)) / 86400000);
+}
+
+function fmtJpy(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return '¥' + Math.round(n).toLocaleString();
+}
+
+function fmtProfit(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const cls = n >= 0 ? 'profit-pos' : 'profit-neg';
+  const sign = n >= 0 ? '+' : '';
+  return `<span class="${cls}">${sign}${Math.round(n).toLocaleString()}</span>`;
+}
+
+function badge(text, type) {
+  if (!text) return '';
+  return `<span class="badge badge-${type || text}">${text}</span>`;
+}
+
+// ────────────────────────────────────────────────────────────
+// Render All
+// ────────────────────────────────────────────────────────────
+function renderAll() {
+  renderSummary();
+  renderItemsTable();
+  renderRates();
+  renderCashflow();
+  if (currentMonthlyMode === 'monthly') renderMonthlyView();
+  else renderDailyView();
+  renderLedger();
+}
+
+// ────────────────────────────────────────────────────────────
+// Summary Bar
+// ────────────────────────────────────────────────────────────
+function renderSummary() {
+  const items = state.items;
+  const inStock = items.filter(i => getStatus(i) === '在庫').length;
+  const listed = items.filter(i => getStatus(i) === '出品中').length;
+  const soldItems = items.filter(i => getStatus(i) === '売却済');
+  const totalSales = soldItems.reduce((s, i) => s + getSoldJpy(i), 0);
+  const profits = soldItems.map(i => calcProfit(i)).filter(p => p !== null);
+  const totalProfit = profits.reduce((s,p) => s + p, 0);
+  const turnovers = soldItems.map(i => calcTurnover(i)).filter(t => t !== null);
+  const avgTurnover = turnovers.length ? Math.round(turnovers.reduce((s,t)=>s+t,0)/turnovers.length) : null;
+  const profitClass = totalProfit >= 0 ? 'profit-pos' : 'profit-neg';
+  const profitSign = totalProfit >= 0 ? '+' : '';
+
+  document.getElementById('summary-bar').innerHTML = `
+    <div class="summary-card">
+      <div class="label">在庫数</div>
+      <div class="value">${inStock}<span style="font-size:14px">件</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">出品中</div>
+      <div class="value">${listed}<span style="font-size:14px">件</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">売上合計</div>
+      <div class="value">¥${totalSales.toLocaleString()}</div>
+      <div class="sub">販売済 ${soldItems.length}件</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">利益合計</div>
+      <div class="value ${profitClass}">${profitSign}¥${Math.abs(totalProfit).toLocaleString()}</div>
+      <div class="sub">平均回転${avgTurnover !== null ? avgTurnover + '日' : '—'}</div>
+    </div>
+  `;
+}
+
+// ────────────────────────────────────────────────────────────
+// Items Table
+// ────────────────────────────────────────────────────────────
+function renderItemsTable() {
+  const statusFilter = document.getElementById('filter-status').value;
+  const pfFilter = document.getElementById('filter-platform').value;
+  let items = state.items.map((item, idx) => ({ item, idx }));
+
+  if (statusFilter) items = items.filter(({item}) => getStatus(item) === statusFilter);
+  if (pfFilter) items = items.filter(({item}) => item.platform === pfFilter);
+
+  if (!items.length) {
+    document.getElementById('items-tbody').innerHTML = `<tr><td colspan="12" class="empty">商品がありません</td></tr>`;
+    return;
+  }
+
+  document.getElementById('items-tbody').innerHTML = items.map(({item, idx}) => {
+    const status = getStatus(item);
+    const profit = calcProfit(item);
+    const turnover = calcTurnover(item);
+    const rate = item.soldPlatform === 'Catawiki' ? getRateForItem(item) : '—';
+    const soldJpy = getStatus(item) === '売却済' ? fmtJpy(getSoldJpy(item)) : '—';
+    return `<tr>
+      <td title="${item.name}" style="max-width:140px">${item.name}</td>
+      <td>${item.buyDate || '—'}</td>
+      <td style="white-space:nowrap;">${item.soldDate || '—'}</td>
+      <td>${fmtJpy(item.cost)}</td>
+      <td>${item.platform ? badge(item.platform) : '—'}</td>
+      <td>${soldJpy}</td>
+      <td>${rate !== '—' ? rate + '円' : '—'}</td>
+      <td>${item.shippingCost ? fmtJpy(item.shippingCost) : '—'}</td>
+      <td>${fmtProfit(profit)}</td>
+      <td>${turnover !== null ? turnover + '日' : '—'}</td>
+      <td>${badge(status)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="openEdit(${idx})">編集</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// Rate Tab
+// ────────────────────────────────────────────────────────────
+function renderRates() {
+  document.getElementById('default-rate').value = defaultRate;
+  const months = Object.keys(state.monthlyRates).sort().reverse();
+  if (!months.length) {
+    document.getElementById('rates-list').innerHTML = '<div class="empty">月別レートが設定されていません</div>';
+    return;
+  }
+  document.getElementById('rates-list').innerHTML = months.map(ym => `
+    <div class="rate-row">
+      <span class="rate-month">${ym}</span>
+      <input type="number" class="rate-input" value="${state.monthlyRates[ym]}"
+        min="1" step="0.1"
+        onchange="updateRate('${ym}', this.value)">
+      <span style="font-size:12px; color:var(--color-text-secondary,#666)">円/EUR</span>
+      <button class="btn btn-secondary btn-sm" onclick="deleteRate('${ym}')">削除</button>
+    </div>
+  `).join('');
+}
+
+function onDefaultRateChange() {
+  defaultRate = parseFloat(document.getElementById('default-rate').value) || 163;
+  save();
+  renderAll();
+}
+
+function addRateRow() {
+  const ym = prompt('月を入力してください（YYYY-MM形式、例: 2025-04）');
+  if (!ym || !/^\d{4}-\d{2}$/.test(ym)) { if(ym) alert('YYYY-MM形式で入力してください'); return; }
+  if (state.monthlyRates[ym] !== undefined) { alert('すでに登録されている月です'); return; }
+  state.monthlyRates[ym] = defaultRate;
+  save();
+  renderAll();
+}
+
+function updateRate(ym, val) {
+  state.monthlyRates[ym] = parseFloat(val) || defaultRate;
+  save();
+  renderAll();
+}
+
+function deleteRate(ym) {
+  delete state.monthlyRates[ym];
+  save();
+  renderAll();
+}
+
+// ────────────────────────────────────────────────────────────
+// Cashflow Tab
+// ────────────────────────────────────────────────────────────
+function renderCashflow() {
+  const items = state.items;
+  const soldItems = items.filter(i => getStatus(i) === '売却済');
+  const unsoldItems = items.filter(i => getStatus(i) !== '売却済');
+  const listedItems = items.filter(i => getStatus(i) === '出品中');
+
+  const totalCost = items.reduce((s,i) => s + (i.cost||0), 0);
+  const inventoryVal = items.filter(i => getStatus(i)==='在庫').reduce((s,i)=>s+(i.cost||0),0);
+  const listedVal = listedItems.reduce((s,i)=>s+(i.cost||0),0);
+  const totalSales = soldItems.reduce((s,i)=>s+getSoldJpy(i),0);
+  const totalShipping = soldItems.reduce((s,i)=>s+(i.shippingCost||0),0);
+  const totalProfit = soldItems.reduce((s,i)=>{ const p=calcProfit(i); return p!==null?s+p:s; }, 0);
+
+  const pClass = totalProfit>=0?'profit-pos':'profit-neg';
+  const pSign = totalProfit>=0?'+':'';
+
+  document.getElementById('cf-grid-1').innerHTML = `
+    <div class="cf-card"><div class="cf-label">総仕入れコスト</div><div class="cf-val">¥${totalCost.toLocaleString()}</div></div>
+    <div class="cf-card"><div class="cf-label">在庫評価額</div><div class="cf-val">¥${inventoryVal.toLocaleString()}</div></div>
+    <div class="cf-card"><div class="cf-label">出品中評価額</div><div class="cf-val">¥${listedVal.toLocaleString()}</div></div>
+  `;
+  document.getElementById('cf-grid-2').innerHTML = `
+    <div class="cf-card"><div class="cf-label">総売上（円換算）</div><div class="cf-val">¥${totalSales.toLocaleString()}</div></div>
+    <div class="cf-card"><div class="cf-label">総発送費</div><div class="cf-val">¥${totalShipping.toLocaleString()}</div></div>
+    <div class="cf-card"><div class="cf-label">純利益</div><div class="cf-val ${pClass}">${pSign}¥${Math.abs(totalProfit).toLocaleString()}</div></div>
+  `;
+
+  // Catawiki breakdown
+  const cItems = soldItems.filter(i=>i.soldPlatform==='Catawiki');
+  const eurGross = cItems.reduce((s,i)=>(s+(i.soldPriceEur||0)+(i.shippingIncomeEur||0)),0);
+  const eurFee = eurGross * CATAWIKI_FEE / 100;
+  const eurNet = eurGross - eurFee;
+  const eurNetJpy = cItems.reduce((s,i)=>s+getSoldJpy(i),0);
+  document.getElementById('cf-catawiki').innerHTML = `
+    <div class="cf-grid">
+      <div class="cf-card"><div class="cf-label">EUR売上合計</div><div class="cf-val">€${eurGross.toFixed(2)}</div><div style="font-size:12px;color:var(--color-text-secondary,#666)">¥${eurNetJpy.toLocaleString()}（換算後）</div></div>
+      <div class="cf-card"><div class="cf-label">Catawiki手数料 12.5%</div><div class="cf-val">€${eurFee.toFixed(2)}</div></div>
+      <div class="cf-card"><div class="cf-label">EUR純収入</div><div class="cf-val">€${eurNet.toFixed(2)}</div></div>
+    </div>
+  `;
+
+  // Mercari breakdown
+  const mItems = soldItems.filter(i=>i.soldPlatform==='Mercari');
+  const mSales = mItems.reduce((s,i)=>s+(i.soldPriceJpy||0),0);
+  const mFeeAmt = mItems.reduce((s,i)=>{
+    const fee = i.fee !== undefined ? i.fee : MERCARI_FEE_DEFAULT;
+    return s + Math.round((i.soldPriceJpy||0) * fee/100);
+  },0);
+  const mNet = mSales - mFeeAmt;
+  document.getElementById('cf-mercari').innerHTML = `
+    <div class="cf-grid">
+      <div class="cf-card"><div class="cf-label">Mercari売上</div><div class="cf-val">¥${mSales.toLocaleString()}</div></div>
+      <div class="cf-card"><div class="cf-label">Mercari手数料</div><div class="cf-val">¥${mFeeAmt.toLocaleString()}</div></div>
+      <div class="cf-card"><div class="cf-label">純収入</div><div class="cf-val">¥${mNet.toLocaleString()}</div></div>
+    </div>
+  `;
+
+  // Chart + monthly breakdown (single aggregation loop)
+  const byMonth = {};
+  soldItems.forEach(item => {
+    const ym = (item.soldDate || '').slice(0,7);
+    if (!ym) return;
+    if (!byMonth[ym]) byMonth[ym] = { sales: 0, profit: 0, count: 0, catCount: 0, merCount: 0, cost: 0 };
+    byMonth[ym].sales += getSoldJpy(item);
+    const p = calcProfit(item);
+    if (p !== null) byMonth[ym].profit += p;
+    byMonth[ym].count++;
+    if (item.soldPlatform === 'Catawiki') byMonth[ym].catCount++;
+    else byMonth[ym].merCount++;
+  });
+  items.forEach(item => {
+    const ym = (item.buyDate || '').slice(0,7);
+    if (!ym) return;
+    if (!byMonth[ym]) byMonth[ym] = { sales: 0, profit: 0, count: 0, catCount: 0, merCount: 0, cost: 0 };
+    byMonth[ym].cost += (item.cost || 0);
+  });
+  const labels = Object.keys(byMonth).sort();
+  const salesData = labels.map(l => byMonth[l].sales);
+  const profitData = labels.map(l => byMonth[l].profit);
+
+  if (cfChart) cfChart.destroy();
+  const ctx = document.getElementById('cf-chart').getContext('2d');
+  cfChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '売上', data: salesData, backgroundColor: '#B5D4F4' },
+        { label: '利益', data: profitData, backgroundColor: '#9FE1CB' }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => '¥' + v.toLocaleString() } } }
+    }
+  });
+
+  // Monthly breakdown table
+  const monthTableRows = labels.slice().reverse().map(m => {
+    const d = byMonth[m];
+    const profitCls = d.profit >= 0 ? 'profit-pos' : 'profit-neg';
+    return `<tr>
+      <td>${m}</td>
+      <td>${d.count}件</td>
+      <td>¥${d.cost.toLocaleString()}</td>
+      <td>¥${d.sales.toLocaleString()}</td>
+      <td class="${profitCls}">¥${Math.round(d.profit).toLocaleString()}</td>
+      <td style="font-size:11px;">Cata:${d.catCount} / Mer:${d.merCount}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('cf-monthly-breakdown').innerHTML = labels.length ? `
+    <div style="margin-top:1.5rem;">
+      <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary,#666);margin-bottom:8px;">月別内訳</div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>月</th><th>販売件数</th><th>仕入コスト</th><th>売上</th><th>利益</th><th>Cata/Mer</th>
+          </tr></thead>
+          <tbody>${monthTableRows}</tbody>
+        </table>
+      </div>
+    </div>
+  ` : '';
+}
+
+// ────────────────────────────────────────────────────────────
+// Monthly / Daily Summary Tab
+// ────────────────────────────────────────────────────────────
+function setMonthlyMode(mode) {
+  currentMonthlyMode = mode;
+  document.getElementById('btn-mode-monthly').className = mode==='monthly' ? 'btn btn-primary' : 'btn btn-secondary';
+  document.getElementById('btn-mode-daily').className = mode==='daily' ? 'btn btn-primary' : 'btn btn-secondary';
+  document.getElementById('monthly-view').style.display = mode==='monthly' ? '' : 'none';
+  document.getElementById('daily-view').style.display = mode==='daily' ? '' : 'none';
+  if (mode==='monthly') renderMonthlyView();
+  else renderDailyView();
+}
+
+function renderMonthlyView() {
+  const items = state.items;
+  // gather all months from buyDate and soldDate
+  const monthSet = new Set();
+  items.forEach(i => {
+    if (i.buyDate) monthSet.add(i.buyDate.slice(0,7));
+    if (i.soldDate) monthSet.add(i.soldDate.slice(0,7));
+  });
+  const months = [...monthSet].sort().reverse();
+
+  if (!months.length) {
+    document.getElementById('monthly-view').innerHTML = '<div class="empty">データがありません</div>';
+    return;
+  }
+
+  document.getElementById('monthly-view').innerHTML = months.map(ym => {
+    const bought = items.filter(i=>(i.buyDate||'').slice(0,7)===ym);
+    const sold = items.filter(i=>(i.soldDate||'').slice(0,7)===ym && getStatus(i)==='売却済');
+    const buyCost = bought.reduce((s,i)=>s+(i.cost||0),0);
+    const sales = sold.reduce((s,i)=>s+getSoldJpy(i),0);
+    const profits = sold.map(i=>calcProfit(i)).filter(p=>p!==null);
+    const totalProfit = profits.reduce((s,p)=>s+p,0);
+    const turnovers = sold.map(i=>calcTurnover(i)).filter(t=>t!==null);
+    const avgTurn = turnovers.length ? Math.round(turnovers.reduce((s,t)=>s+t,0)/turnovers.length) : null;
+    const rate = state.monthlyRates[ym] || defaultRate;
+    const pClass = totalProfit>=0?'profit-pos':'profit-neg';
+    const pSign = totalProfit>=0?'+':'';
+
+    return `<div class="month-card">
+      <div class="month-card-header">
+        <span class="month-title">${ym}</span>
+        <span class="rate-note">適用レート: ${rate}円/EUR</span>
+        <span class="${pClass}" style="font-weight:700">${pSign}¥${Math.abs(totalProfit).toLocaleString()}</span>
+      </div>
+      <div class="month-sub-grid">
+        <div class="month-sub-card">
+          <div class="sc-label">仕入件数</div>
+          <div class="sc-val">${bought.length}件</div>
+          <div style="font-size:11px;color:var(--color-text-secondary,#666)">¥${buyCost.toLocaleString()}</div>
+        </div>
+        <div class="month-sub-card">
+          <div class="sc-label">販売件数</div>
+          <div class="sc-val">${sold.length}件</div>
+        </div>
+        <div class="month-sub-card">
+          <div class="sc-label">売上</div>
+          <div class="sc-val">¥${sales.toLocaleString()}</div>
+        </div>
+        <div class="month-sub-card">
+          <div class="sc-label">平均回転日数</div>
+          <div class="sc-val">${avgTurn!==null?avgTurn+'日':'—'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDailyView() {
+  const ym = document.getElementById('daily-month-input').value;
+  if (!ym) { document.getElementById('daily-tbody').innerHTML = '<tr><td colspan="5" class="empty">月を選択してください</td></tr>'; return; }
+
+  const items = state.items;
+  const daysSet = new Set();
+  items.forEach(i => {
+    if (i.buyDate && i.buyDate.startsWith(ym)) daysSet.add(i.buyDate);
+    if (i.soldDate && i.soldDate.startsWith(ym)) daysSet.add(i.soldDate);
+  });
+  const days = [...daysSet].sort();
+
+  if (!days.length) { document.getElementById('daily-tbody').innerHTML = '<tr><td colspan="5" class="empty">該当するデータがありません</td></tr>'; return; }
+
+  document.getElementById('daily-tbody').innerHTML = days.map(day => {
+    const bought = items.filter(i=>i.buyDate===day);
+    const sold = items.filter(i=>i.soldDate===day && getStatus(i)==='売却済');
+    const buyCost = bought.reduce((s,i)=>s+(i.cost||0),0);
+    const sales = sold.reduce((s,i)=>s+getSoldJpy(i),0);
+    const profits = sold.map(i=>calcProfit(i)).filter(p=>p!==null);
+    const totalProfit = profits.reduce((s,p)=>s+p,0);
+    return `<tr>
+      <td>${day}</td>
+      <td>${buyCost ? fmtJpy(buyCost) : '—'}</td>
+      <td>${sold.length || '—'}</td>
+      <td>${sales ? fmtJpy(sales) : '—'}</td>
+      <td>${fmtProfit(profits.length ? totalProfit : null)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// Ledger Tab
+// ────────────────────────────────────────────────────────────
+function renderLedger() {
+  const items = [...state.items].sort((a,b)=>(a.buyDate||'').localeCompare(b.buyDate||''));
+  if (!items.length) {
+    document.getElementById('ledger-tbody').innerHTML = '<tr><td colspan="9" class="empty">データがありません</td></tr>';
+    return;
+  }
+  document.getElementById('ledger-tbody').innerHTML = items.map((item,i) => {
+    const soldPrice = getStatus(item)==='売却済' ? fmtJpy(getSoldJpy(item)) : '—';
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${item.buyDate||'—'}</td>
+      <td title="${item.name}" style="max-width:140px">${item.name}</td>
+      <td>${item.category||'—'}</td>
+      <td>${fmtJpy(item.cost)}</td>
+      <td title="${item.seller||''}" style="max-width:160px">${item.seller||'—'}</td>
+      <td>${item.soldDate||'—'}</td>
+      <td>${soldPrice}</td>
+      <td title="${item.note||''}" style="max-width:120px">${item.note||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// Add Form
+// ────────────────────────────────────────────────────────────
+function onAddSoldPlatformChange() {
+  const pf = document.getElementById('add-soldPlatform').value;
+  const isJpy = pf === 'Mercari' || pf === 'ヤフオク';
+  document.getElementById('field-soldPriceJpy').style.display = isJpy ? '' : 'none';
+  document.getElementById('field-mercari-fee').style.display = isJpy ? '' : 'none';
+  document.getElementById('field-soldPriceEur').style.display = pf==='Catawiki' ? '' : 'none';
+  document.getElementById('field-shippingIncomeEur').style.display = pf==='Catawiki' ? '' : 'none';
+  document.getElementById('field-catawiki-fee-note').style.display = pf==='Catawiki' ? '' : 'none';
+  if (pf === 'ヤフオク') document.getElementById('add-fee').value = '8.8';
+  else if (pf === 'Mercari') document.getElementById('add-fee').value = '10';
+  updateAddPreview();
+}
+
+function onAddSoldDateChange() {
+  const soldDate = document.getElementById('add-soldDate').value;
+  const soldPf = document.getElementById('add-soldPlatform').value;
+  const hint = document.getElementById('add-rate-hint');
+  if (soldDate && soldPf === 'Catawiki') {
+    const ym = soldDate.slice(0,7);
+    const rate = state.monthlyRates[ym] !== undefined ? state.monthlyRates[ym] : defaultRate;
+    const src = state.monthlyRates[ym] !== undefined ? '月別レートで固定' : 'デフォルトレート';
+    hint.textContent = `${ym}の適用レート: ${rate}円/EUR（${src}）`;
+    hint.style.display = '';
+  } else {
+    hint.style.display = 'none';
+  }
+  updateAddPreview();
+}
+
+function updateAddPreview() {
+  const pf = document.getElementById('add-soldPlatform').value;
+  const cost = parseFloat(document.getElementById('add-cost').value) || 0;
+  const shipping = parseFloat(document.getElementById('add-shippingCost').value) || 0;
+  const preview = document.getElementById('add-preview');
+
+  if (!pf) { preview.style.display = 'none'; return; }
+
+  let soldJpy = 0;
+  if (pf === 'Mercari' || pf === 'ヤフオク') {
+    const price = parseFloat(document.getElementById('add-soldPriceJpy').value) || 0;
+    const fee = parseFloat(document.getElementById('add-fee').value) || (pf === 'ヤフオク' ? 8.8 : MERCARI_FEE_DEFAULT);
+    if (!price) { preview.style.display = 'none'; return; }
+    soldJpy = Math.round(price * (1 - fee/100));
+  } else if (pf === 'Catawiki') {
+    const price = parseFloat(document.getElementById('add-soldPriceEur').value) || 0;
+    const incEur = parseFloat(document.getElementById('add-shippingIncomeEur').value) || 0;
+    if (!price) { preview.style.display = 'none'; return; }
+    const soldDate = document.getElementById('add-soldDate').value;
+    const ym = soldDate ? soldDate.slice(0,7) : '';
+    const rate = (ym && state.monthlyRates[ym] !== undefined) ? state.monthlyRates[ym] : defaultRate;
+    const gross = price + incEur;
+    const netEur = gross * (1 - CATAWIKI_FEE/100);
+    soldJpy = Math.round(netEur * rate);
+  }
+  const profit = soldJpy - cost - shipping;
+  const pClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
+  const pSign = profit >= 0 ? '+' : '';
+  preview.innerHTML = `利益プレビュー: <strong class="${pClass}">${pSign}¥${profit.toLocaleString()}</strong>（売上¥${soldJpy.toLocaleString()} - 仕入¥${cost.toLocaleString()} - 発送¥${shipping.toLocaleString()}）`;
+  preview.style.display = '';
+}
+
+function submitAdd() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { alert('商品名を入力してください'); return; }
+
+  const pf = document.getElementById('add-soldPlatform').value;
+  const fee = pf === 'Catawiki' ? CATAWIKI_FEE
+            : (pf === 'Mercari' || pf === 'ヤフオク') ? (parseFloat(document.getElementById('add-fee').value) || (pf === 'ヤフオク' ? 8.8 : MERCARI_FEE_DEFAULT))
+            : MERCARI_FEE_DEFAULT;
+
+  const item = {
+    name,
+    source: document.getElementById('add-source').value,
+    buyDate: document.getElementById('add-buyDate').value,
+    cost: parseFloat(document.getElementById('add-cost').value) || 0,
+    category: document.getElementById('add-category').value,
+    condition: document.getElementById('add-condition').value,
+    seller: document.getElementById('add-seller').value.trim(),
+    platform: document.getElementById('add-platform').value,
+    listDate: document.getElementById('add-listDate').value,
+    listPriceJpy: 0,
+    listPriceEur: 0,
+    soldPlatform: pf,
+    soldDate: document.getElementById('add-soldDate').value,
+    soldPriceJpy: parseFloat(document.getElementById('add-soldPriceJpy').value) || 0,
+    soldPriceEur: parseFloat(document.getElementById('add-soldPriceEur').value) || 0,
+    shippingIncomeEur: parseFloat(document.getElementById('add-shippingIncomeEur').value) || 0,
+    shippingCost: parseFloat(document.getElementById('add-shippingCost').value) || 0,
+    fee,
+    note: document.getElementById('add-note').value.trim(),
+    addedAt: new Date().toISOString().slice(0,10)
+  };
+
+  state.items.unshift(item);
+  save();
+
+  // Reset form
+  ['add-name','add-buyDate','add-cost','add-seller','add-listDate',
+   'add-soldDate','add-soldPriceJpy','add-soldPriceEur','add-note'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = el.type === 'number' ? '0' : '';
+  });
+  document.getElementById('add-platform').value = '';
+  document.getElementById('add-soldPlatform').value = '';
+  document.getElementById('add-shippingCost').value = '0';
+  document.getElementById('add-shippingIncomeEur').value = '0';
+  document.getElementById('add-fee').value = '10';
+  onAddSoldPlatformChange();
+  document.getElementById('add-rate-hint').style.display = 'none';
+  document.getElementById('add-preview').style.display = 'none';
+
+  renderAll();
+  switchTab('list');
+}
+
+// ────────────────────────────────────────────────────────────
+// Edit Modal
+// ────────────────────────────────────────────────────────────
+function openEdit(idx) {
+  editingIndex = idx;
+  const item = state.items[idx];
+  const soldPf = item.soldPlatform || '';
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>商品名 *</label>
+        <input type="text" id="e-name" value="${esc(item.name)}">
+      </div>
+      <div class="form-group">
+        <label>仕入先</label>
+        <select id="e-source">${['Yahoo Auctions','Mercari','Hard Off','フリマ','その他'].map(v=>`<option${v===item.source?' selected':''}>${v}</option>`).join('')}</select>
+      </div>
+      <div class="form-group">
+        <label>仕入日</label>
+        <input type="date" id="e-buyDate" value="${item.buyDate||''}">
+      </div>
+      <div class="form-group">
+        <label>仕入値（円）</label>
+        <input type="number" id="e-cost" value="${item.cost||0}">
+      </div>
+      <div class="form-group">
+        <label>カテゴリ</label>
+        <select id="e-category">${['時計','鍔（つば）','着物・羽織','ジュエリー','陶磁器','その他'].map(v=>`<option${v===item.category?' selected':''}>${v}</option>`).join('')}</select>
+      </div>
+      <div class="form-group">
+        <label>状態</label>
+        <select id="e-condition">${['良好','普通','ジャンク'].map(v=>`<option${v===item.condition?' selected':''}>${v}</option>`).join('')}</select>
+      </div>
+      <div class="form-group full">
+        <label>仕入先情報</label>
+        <textarea id="e-seller">${esc(item.seller||'')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>出品PF</label>
+        <select id="e-platform">${['','Mercari','Catawiki','両方'].map(v=>`<option value="${v}"${v===(item.platform||'')?' selected':''}>${v||'未出品'}</option>`).join('')}</select>
+      </div>
+      <div class="form-group">
+        <label>出品日</label>
+        <input type="date" id="e-listDate" value="${item.listDate||''}">
+      </div>
+      <div class="form-group">
+        <label>販売PF</label>
+        <select id="e-soldPlatform" onchange="onEditSoldPlatformChange()">${['','Mercari','ヤフオク','Catawiki'].map(v=>`<option value="${v}"${v===soldPf?' selected':''}>${v||'未販売'}</option>`).join('')}</select>
+      </div>
+      <div class="form-group">
+        <label>販売日</label>
+        <input type="date" id="e-soldDate" value="${item.soldDate||''}">
+      </div>
+      <div class="form-group" id="e-field-soldPriceJpy">
+        <label>売値（¥）</label>
+        <input type="number" id="e-soldPriceJpy" value="${item.soldPriceJpy||0}">
+      </div>
+      <div class="form-group" id="e-field-mercari-fee">
+        <label>手数料（%）</label>
+        <input type="number" id="e-fee" value="${item.fee!==undefined?item.fee:MERCARI_FEE_DEFAULT}" step="0.1">
+      </div>
+      <div class="form-group" id="e-field-soldPriceEur">
+        <label>売値（EUR）</label>
+        <input type="number" id="e-soldPriceEur" value="${item.soldPriceEur||0}" step="0.01">
+      </div>
+      <div class="form-group" id="e-field-shippingIncomeEur">
+        <label>もらう送料（EUR）</label>
+        <input type="number" id="e-shippingIncomeEur" value="${item.shippingIncomeEur||0}" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>発送費（¥）</label>
+        <input type="number" id="e-shippingCost" value="${item.shippingCost||0}">
+      </div>
+      <div class="form-group full">
+        <label>メモ</label>
+        <input type="text" id="e-note" value="${esc(item.note||'')}">
+      </div>
+    </div>
+  `;
+
+  onEditSoldPlatformChange();
+
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.add('open');
+  overlay.scrollTop = 0;
+  document.getElementById('modal-overlay').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function onEditSoldPlatformChange() {
+  const pf = document.getElementById('e-soldPlatform').value;
+  const isJpy = pf === 'Mercari' || pf === 'ヤフオク';
+  document.getElementById('e-field-soldPriceJpy').style.display = isJpy ? '' : 'none';
+  document.getElementById('e-field-mercari-fee').style.display = isJpy ? '' : 'none';
+  document.getElementById('e-field-soldPriceEur').style.display = pf==='Catawiki' ? '' : 'none';
+  document.getElementById('e-field-shippingIncomeEur').style.display = pf==='Catawiki' ? '' : 'none';
+}
+
+function saveEdit() {
+  const name = document.getElementById('e-name').value.trim();
+  if (!name) { alert('商品名を入力してください'); return; }
+  const pf = document.getElementById('e-soldPlatform').value;
+  const fee = pf==='Catawiki' ? CATAWIKI_FEE
+            : parseFloat(document.getElementById('e-fee').value) || (pf==='ヤフオク' ? 8.8 : MERCARI_FEE_DEFAULT);
+
+  const item = state.items[editingIndex];
+  item.name = name;
+  item.source = document.getElementById('e-source').value;
+  item.buyDate = document.getElementById('e-buyDate').value;
+  item.cost = parseFloat(document.getElementById('e-cost').value) || 0;
+  item.category = document.getElementById('e-category').value;
+  item.condition = document.getElementById('e-condition').value;
+  item.seller = document.getElementById('e-seller').value.trim();
+  item.platform = document.getElementById('e-platform').value;
+  item.listDate = document.getElementById('e-listDate').value;
+  item.soldPlatform = pf;
+  item.soldDate = document.getElementById('e-soldDate').value;
+  item.soldPriceJpy = parseFloat(document.getElementById('e-soldPriceJpy').value) || 0;
+  item.soldPriceEur = parseFloat(document.getElementById('e-soldPriceEur').value) || 0;
+  item.shippingIncomeEur = parseFloat(document.getElementById('e-shippingIncomeEur').value) || 0;
+  item.shippingCost = parseFloat(document.getElementById('e-shippingCost').value) || 0;
+  item.fee = fee;
+  item.note = document.getElementById('e-note').value.trim();
+
+  save();
+  closeModal();
+  renderAll();
+}
+
+function deleteItem() {
+  if (!confirm(`「${state.items[editingIndex].name}」を削除しますか？`)) return;
+  state.items.splice(editingIndex, 1);
+  save();
+  closeModal();
+  renderAll();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingIndex = -1;
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ────────────────────────────────────────────────────────────
+// CSV Export
+// ────────────────────────────────────────────────────────────
+function exportCSV(mode) {
+  const items = state.items;
+  let rows = [];
+  let filename = '';
+
+  if (mode === 'ledger') {
+    filename = '古物台帳.csv';
+    const sorted = [...items].sort((a,b)=>(a.buyDate||'').localeCompare(b.buyDate||''));
+    rows.push(['No.','取引日','品名・特徴','カテゴリ','取得価格','仕入先情報','処分日','処分価格','備考']);
+    sorted.forEach((item,i) => {
+      rows.push([
+        i+1,
+        item.buyDate||'',
+        item.name,
+        item.category||'',
+        item.cost||0,
+        item.seller||'',
+        item.soldDate||'',
+        getStatus(item)==='売却済' ? getSoldJpy(item) : '',
+        item.note||''
+      ]);
+    });
+  } else {
+    let filtered = items;
+    if (mode === 'sold') { filtered = items.filter(i=>getStatus(i)==='売却済'); filename = '売却済.csv'; }
+    else if (mode === 'unsold') { filtered = items.filter(i=>getStatus(i)!=='売却済'); filename = '在庫・出品中.csv'; }
+    else { filename = '全件.csv'; }
+
+    rows.push(['商品名','カテゴリ','状態','仕入先','仕入日','仕入値(¥)','仕入先情報','出品PF','出品日',
+      'Mercari出品価格(¥)','Catawiki出品価格(EUR)','販売PF','販売日','適用レート(円/EUR)',
+      '売値(¥)','売値(EUR)','もらう送料(EUR)','発送費(¥)','手数料(%)','利益(¥)','回転日数','メモ']);
+    filtered.forEach(item => {
+      const profit = calcProfit(item);
+      const turnover = calcTurnover(item);
+      const rate = item.soldPlatform==='Catawiki' ? getRateForItem(item) : '';
+      rows.push([
+        item.name,
+        item.category||'',
+        item.condition||'',
+        item.source||'',
+        item.buyDate||'',
+        item.cost||0,
+        item.seller||'',
+        item.platform||'',
+        item.listDate||'',
+        item.listPriceJpy||0,
+        item.listPriceEur||0,
+        item.soldPlatform||'',
+        item.soldDate||'',
+        rate,
+        item.soldPriceJpy||0,
+        item.soldPriceEur||0,
+        item.shippingIncomeEur||0,
+        item.shippingCost||0,
+        item.fee!==undefined?item.fee:MERCARI_FEE_DEFAULT,
+        profit!==null?profit:'',
+        turnover!==null?turnover:'',
+        item.note||''
+      ]);
+    });
+  }
+
+  const csv = '\uFEFF' + rows.map(row =>
+    row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')
+  ).join('\r\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ────────────────────────────────────────────────────────────
+// Tabs
+// ────────────────────────────────────────────────────────────
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'tab-' + tabId);
+  });
+  if (tabId === 'cashflow') renderCashflow();
+  if (tabId === 'monthly') {
+    if (currentMonthlyMode === 'monthly') renderMonthlyView();
+    else renderDailyView();
+  }
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  if (e.target.classList.contains('tab-btn')) switchTab(e.target.dataset.tab);
+});
+
+document.getElementById('filter-status').addEventListener('change', renderItemsTable);
+document.getElementById('filter-platform').addEventListener('change', renderItemsTable);
+
+// ────────────────────────────────────────────────────────────
+// Init
+// ────────────────────────────────────────────────────────────
+load();
+renderAll();
+</script>
+</body>
+</html>
