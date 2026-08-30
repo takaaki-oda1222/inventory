@@ -1,0 +1,448 @@
+<title>変形スタンド 広告台本3案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --ground:#EEF1F6;
+    --sheet:#FFFFFF;
+    --sheet-2:#F7F9FC;
+    --ink:#141922;
+    --ink-2:#39424F;
+    --muted:#6D7889;
+    --line:#DBE1EA;
+    --line-soft:#E9EDF3;
+    --accent:#1360CE;
+    --accent-soft:#E4EDFB;
+    --glow:#0F93C7;
+    --hue-a:#1F6F6B;
+    --hue-a-soft:#DFEDEB;
+    --hue-b:#B33F2E;
+    --hue-b-soft:#F7E5E0;
+    --hue-c:#8E6410;
+    --hue-c-soft:#F4EBDA;
+    --shadow:0 1px 2px rgba(20,25,34,.06), 0 8px 24px rgba(20,25,34,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0E1218;
+      --sheet:#161B23;
+      --sheet-2:#1B212B;
+      --ink:#E7ECF3;
+      --ink-2:#B9C2CF;
+      --muted:#8A94A3;
+      --line:#2A323E;
+      --line-soft:#232A34;
+      --accent:#5AA0FF;
+      --accent-soft:#16283F;
+      --glow:#4EC3EC;
+      --hue-a:#63C4BC;
+      --hue-a-soft:#142C2B;
+      --hue-b:#EE8C79;
+      --hue-b-soft:#33201C;
+      --hue-c:#DDAF57;
+      --hue-c-soft:#2E2618;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0E1218;
+    --sheet:#161B23;
+    --sheet-2:#1B212B;
+    --ink:#E7ECF3;
+    --ink-2:#B9C2CF;
+    --muted:#8A94A3;
+    --line:#2A323E;
+    --line-soft:#232A34;
+    --accent:#5AA0FF;
+    --accent-soft:#16283F;
+    --glow:#4EC3EC;
+    --hue-a:#63C4BC;
+    --hue-a-soft:#142C2B;
+    --hue-b:#EE8C79;
+    --hue-b-soft:#33201C;
+    --hue-c:#DDAF57;
+    --hue-c-soft:#2E2618;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.28);
+  }
+
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:40px 22px 96px;}
+  h1,h2,h3,.disp{font-family:"Zen Kaku Gothic New","Noto Sans JP",system-ui,sans-serif;text-wrap:balance;}
+  .mono{font-family:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;}
+
+  /* ── ヘッダー ── */
+  .masthead{border-top:3px solid var(--ink);padding-top:20px;margin-bottom:34px;}
+  .kicker{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .kicker b{color:var(--accent);font-weight:700;}
+  h1{font-size:clamp(28px,4.6vw,44px);font-weight:900;line-height:1.24;letter-spacing:-.01em;margin:14px 0 10px;}
+  .lede{color:var(--ink-2);max-width:66ch;font-size:15px;}
+  .lede a{color:var(--accent);text-underline-offset:3px;}
+
+  /* ── 共通仕様 ── */
+  .spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);margin:30px 0 18px;box-shadow:var(--shadow);}
+  .spec div{background:var(--sheet);padding:15px 17px;}
+  .spec dt{font-size:10.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+  .spec dd{font-size:14px;font-weight:500;line-height:1.7;}
+  .spec dd .mono{font-size:13.5px;}
+
+  /* ── ナビ ── */
+  nav{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 46px;padding-bottom:26px;border-bottom:1px solid var(--line);}
+  nav a{display:inline-flex;align-items:center;gap:9px;padding:9px 15px 9px 11px;background:var(--sheet);
+    border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:500;transition:border-color .15s,transform .15s;}
+  nav a:hover,nav a:focus-visible{border-color:var(--accent);transform:translateY(-1px);}
+  nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  nav .tag{font-family:"Roboto Mono",monospace;font-size:11px;font-weight:700;padding:2px 7px;letter-spacing:.06em;}
+
+  /* ── パターン ── */
+  section{margin-bottom:60px;scroll-margin-top:18px;}
+  .head{display:flex;gap:16px;align-items:flex-start;margin-bottom:4px;}
+  .badge{flex:none;width:44px;height:44px;display:grid;place-items:center;font-family:"Roboto Mono",monospace;
+    font-weight:700;font-size:19px;color:#fff;background:var(--hue);letter-spacing:0;}
+  .head h2{font-size:clamp(21px,2.7vw,27px);font-weight:900;line-height:1.35;margin-top:1px;}
+  .head .sub{font-size:12.5px;letter-spacing:.1em;color:var(--hue);font-weight:700;margin-bottom:2px;}
+  .aim{margin:14px 0 20px;padding:14px 18px;background:var(--hue-soft);border-left:3px solid var(--hue);
+    color:var(--ink-2);font-size:14px;max-width:74ch;}
+  .aim b{color:var(--ink);font-weight:700;}
+  .facts{display:flex;flex-wrap:wrap;gap:8px 26px;margin-bottom:16px;font-size:13px;color:var(--muted);}
+  .facts span b{color:var(--ink-2);font-weight:500;}
+
+  #pat-a{--hue:var(--hue-a);--hue-soft:var(--hue-a-soft);}
+  #pat-b{--hue:var(--hue-b);--hue-soft:var(--hue-b-soft);}
+  #pat-c{--hue:var(--hue-c);--hue-soft:var(--hue-c-soft);}
+
+  /* ── 台本テーブル ── */
+  .scroller{overflow-x:auto;border:1px solid var(--line);background:var(--sheet);box-shadow:var(--shadow);}
+  table{border-collapse:collapse;width:100%;min-width:860px;}
+  thead th{position:sticky;top:0;background:var(--sheet-2);text-align:left;font-size:10.5px;letter-spacing:.14em;
+    color:var(--muted);font-weight:700;text-transform:uppercase;padding:11px 16px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tbody td{padding:16px;border-bottom:1px solid var(--line-soft);vertical-align:top;font-size:14px;line-height:1.8;}
+  tbody tr:last-child td{border-bottom:none;}
+  col.c-cut{width:104px;}
+  col.c-vis{width:35%;}
+  col.c-tel{width:26%;}
+  col.c-nar{width:30%;}
+  .cut{background:var(--sheet-2);border-right:1px solid var(--line-soft);}
+  .cut .no{font-family:"Roboto Mono",monospace;font-weight:700;font-size:13px;color:var(--hue);letter-spacing:.04em;}
+  .cut .tc{font-family:"Roboto Mono",monospace;font-size:12px;color:var(--muted);display:block;margin-top:2px;white-space:nowrap;}
+  .vis{color:var(--ink-2);}
+  .vis em{font-style:normal;color:var(--ink);font-weight:500;}
+  .tel{font-family:"Zen Kaku Gothic New","Noto Sans JP",sans-serif;font-weight:700;color:var(--ink);line-height:1.65;}
+  .tel .sm{display:block;font-family:"Noto Sans JP",sans-serif;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.7;}
+  .nar{color:var(--ink-2);}
+  .nar .se{display:block;font-size:12px;color:var(--glow);font-weight:500;margin-top:6px;letter-spacing:.02em;}
+
+  /* ── 付録 ── */
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:22px;}
+  .card{background:var(--sheet);border:1px solid var(--line);padding:24px 26px;box-shadow:var(--shadow);}
+  .card h3{font-size:17px;font-weight:900;margin-bottom:4px;}
+  .card .note{font-size:12.5px;color:var(--muted);margin-bottom:16px;}
+  ol.shots{list-style:none;counter-reset:shot;}
+  ol.shots li{counter-increment:shot;position:relative;padding:9px 0 9px 42px;border-bottom:1px solid var(--line-soft);font-size:14px;}
+  ol.shots li:last-child{border-bottom:none;}
+  ol.shots li::before{content:counter(shot,decimal-leading-zero);position:absolute;left:0;top:10px;
+    font-family:"Roboto Mono",monospace;font-size:11.5px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);padding:2px 7px;}
+  ol.shots li span{display:block;font-size:12.5px;color:var(--muted);line-height:1.7;}
+  ul.checks{list-style:none;}
+  ul.checks li{padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:14px;color:var(--ink-2);}
+  ul.checks li:last-child{border-bottom:none;}
+  ul.checks li b{display:block;color:var(--ink);font-weight:700;font-size:13.5px;margin-bottom:2px;}
+  ul.checks li b::before{content:"!";display:inline-grid;place-items:center;width:16px;height:16px;margin-right:8px;
+    background:var(--hue-b);color:#fff;font-family:"Roboto Mono",monospace;font-size:11px;vertical-align:1px;}
+  h2.apx{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;
+    padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:24px;}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);}
+  @media (max-width:640px){
+    .wrap{padding:28px 14px 70px;}
+    .aim{padding:12px 14px;}
+    .card{padding:20px 18px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span><b>Meta広告</b>／動画台本</span><span>3-in-1 折りたたみマグネットスタンド</span><span class="mono">2026.08.30</span></div>
+    <h1>1本で変形する3-in-1スタンド<br>Meta広告 動画台本3案</h1>
+    <p class="lede">同一商品・同一素材から、フックの取り方だけを変えた3本。A／B／Cを同時入稿して、3秒離脱率とCTRで勝ちパターンを判定する前提で書いています。商品ページ：<a href="https://felva.jp/products/foldable-magnetic-laptop-stand-aluminum-alloy-portable-adjustable-stand-heat-dissipation-holder-supports-phone-tablet-notebook">felva.jp</a></p>
+
+    <dl class="spec">
+      <div><dt>Format</dt><dd class="mono">9:16 縦型／1080×1920</dd></div>
+      <div><dt>配信面</dt><dd>Instagram・Facebook リール／ストーリーズ／フィード</dd></div>
+      <div><dt>音声</dt><dd>ミュート再生前提。<b>全カットにテロップ必須</b></dd></div>
+      <div><dt>尺</dt><dd class="mono">A 30秒／B 20秒／C 30秒</dd></div>
+      <div><dt>冒頭3秒</dt><dd>商品カットより先に「引っかかり」を置く</dd></div>
+      <div><dt>CTA</dt><dd>詳しくはこちら → 商品ページ</dd></div>
+    </dl>
+  </header>
+
+  <nav>
+    <a href="#pat-a"><span class="tag" style="background:var(--hue-a-soft);color:var(--hue-a)">A</span>共感・悩み解決型</a>
+    <a href="#pat-b"><span class="tag" style="background:var(--hue-b-soft);color:var(--hue-b)">B</span>衝撃・インパクト型</a>
+    <a href="#pat-c"><span class="tag" style="background:var(--hue-c-soft);color:var(--hue-c)">C</span>UGC・レビュー型</a>
+    <a href="#shots"><span class="tag" style="background:var(--accent-soft);color:var(--accent)">＋</span>撮影素材リスト・注意点</a>
+  </nav>
+
+  <!-- ══ パターンA ══ -->
+  <section id="pat-a">
+    <div class="head">
+      <div class="badge">A</div>
+      <div>
+        <div class="sub">共感・悩み解決型</div>
+        <h2>「気づいたら、いつもこの角度。」</h2>
+      </div>
+    </div>
+    <p class="aim"><b>狙い：</b>猫背でPCを覗き込む自分の姿を冒頭で見せ、「これ私だ」と手を止めさせる。悩み（姿勢・机の散らかり）→ 原因 → 1本で解決、の順で、商品説明ではなく<b>生活の改善</b>として見せる。</p>
+    <div class="facts">
+      <span><b>尺</b> 30秒</span><span><b>主ターゲット</b> 在宅ワーク／ノマドの25〜45歳</span><span><b>トーン</b> 落ち着いた語り・生活音多め</span><span><b>訴求順</b> 姿勢 → 3in1 → 放熱 → 携帯性</span>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <colgroup><col class="c-cut"><col class="c-vis"><col class="c-tel"><col class="c-nar"></colgroup>
+        <thead><tr><th>カット</th><th>映像のイメージ</th><th>テロップ</th><th>ナレーション</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cut"><span class="no">A-1</span><span class="tc">0:00–0:03</span></td>
+            <td class="vis"><em>真横・ローアングル。</em>机に直置きしたノートPCを覗き込む猫背の横顔。首から背中に赤いガイドラインをスッと重ねる。生活音のみ、無音に近い立ち上がり。</td>
+            <td class="tel">気づいたら、いつもこの角度。<span class="sm">画面下1/3・白ヌキ太ゴシック／赤ラインと同時にIN</span></td>
+            <td class="nar">作業に集中すると、気づいたらこの姿勢。<span class="se">SE：キーボード打鍵音のみ</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-2</span><span class="tc">0:03–0:06</span></td>
+            <td class="vis"><em>真上からの俯瞰。</em>ノートPC、立てかけただけのスマホ、寝かせたタブレット、バラバラのスタンド2つが散らかった机。カメラをゆっくり寄せる。</td>
+            <td class="tel">机の上、スタンドだらけ問題<span class="sm">散らかったモノに白丸の囲みを1つずつ点灯</span></td>
+            <td class="nar">しかも机の上は、スタンドだらけ。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-3</span><span class="tc">0:06–0:09</span></td>
+            <td class="vis"><em>手元アップ・ワンカット長回し。</em>畳んだ棒状の本体を手に取り、パキッ、パキッと開いてX字に展開する。散らかった机を画面外にフレームアウトさせる。</td>
+            <td class="tel">これ1本で、ぜんぶ足ります<span class="sm">展開が完了した瞬間にドン</span></td>
+            <td class="nar">これ1本で、ぜんぶ解決します。<span class="se">SE：カチッ／カチッ（関節音を強調）</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-4</span><span class="tc">0:09–0:13</span></td>
+            <td class="vis"><em>固定カメラで同アングルの前後比較。</em>左に直置き＝猫背、右にスタンド使用＝背筋が伸びた状態。目線の高さに水平ラインを引いて差を見せる。</td>
+            <td class="tel">8段階の高さ調整で、<br>目線の高さまで<span class="sm">「15°→75°」を小さく併記</span></td>
+            <td class="nar">8段階の角度調整で、15度から75度まで。自分にちょうどいい高さに。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-5</span><span class="tc">0:13–0:17</span></td>
+            <td class="vis"><em>手元アップ。</em>中央のハブを回して脚を組み替え、タブレットスタンドへ変形。続けてスマホの背面をマグネット部に近づけ、吸い付く瞬間をアップで。</td>
+            <td class="tel">スマホも、タブレットも、<br>この1本<span class="sm">3アイコン（スマホ／タブレット／PC）を順に点灯</span></td>
+            <td class="nar">回して、変形。スマホはマグネットでワンタッチ。<span class="se">SE：バチッ（吸着音）</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-6</span><span class="tc">0:17–0:21</span></td>
+            <td class="vis"><em>ローアングル寄り。</em>持ち上がったノートPCの底面と机の隙間に手を差し入れる／薄いティッシュが排気でふわりと揺れる。隙間に寸法線を重ねる。</td>
+            <td class="tel">2〜6cm浮かせて、<br>熱もこもりにくい<span class="sm">寸法線と数値はアニメーションで伸ばす</span></td>
+            <td class="nar">本体を2センチから6センチ持ち上げるから、熱もこもりにくい。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-7</span><span class="tc">0:21–0:25</span></td>
+            <td class="vis"><em>2カット割り。</em>①畳んでガジェットポーチにスッと入れる手元。②カフェの席で開き、PCを載せて作業を始める引き。窓の自然光。</td>
+            <td class="tel">たたんで、どこへでも<span class="sm">カフェカットに切り替わるタイミングで</span></td>
+            <td class="nar">たたんでカバンに。カフェでも、旅先でも、いつもの姿勢で。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">A-8</span><span class="tc">0:25–0:30</span></td>
+            <td class="vis"><em>白背景のブツ撮り。</em>商品がゆっくり回転し、下からCTAボタンがせり上がる。ロゴを右上に。</td>
+            <td class="tel">1本3役／折りたたみ<br>マグネットスタンド<span class="sm">CTA：詳しくはこちら ▶</span></td>
+            <td class="nar">デスクも、姿勢も、軽くする。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══ パターンB ══ -->
+  <section id="pat-b">
+    <div class="head">
+      <div class="badge">B</div>
+      <div>
+        <div class="sub">衝撃・インパクト型</div>
+        <h2>「これ、何に見えます？」</h2>
+      </div>
+    </div>
+    <p class="aim"><b>狙い：</b>畳んだ状態＝ただの黒い棒、という「正体不明のモノ」から入り、変形で答え合わせをする。説明を先にせず、<b>変形・吸着・収納の3つの気持ちいい瞬間</b>だけを高速で積む。無音でも成立する構成。</p>
+    <div class="facts">
+      <span><b>尺</b> 20秒</span><span><b>主ターゲット</b> ガジェット好き／新しいもの好き</span><span><b>トーン</b> 黒背景・硬質・テンポ最優先</span><span><b>訴求順</b> 変形 → 安定 → 角度 → 磁力 → 収納</span>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <colgroup><col class="c-cut"><col class="c-vis"><col class="c-tel"><col class="c-nar"></colgroup>
+        <thead><tr><th>カット</th><th>映像のイメージ</th><th>テロップ</th><th>ナレーション</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cut"><span class="no">B-1</span><span class="tc">0:00–0:02</span></td>
+            <td class="vis"><em>真っ黒背景・極アップ。</em>指先で畳んだ本体をクルリと回す。表面のハイライトだけが流れる。何の商品か分からない状態を2秒キープ。</td>
+            <td class="tel">これ、何に見えます？<span class="sm">画面中央・大きめ／0.5秒でIN</span></td>
+            <td class="nar">これ、なんだと思いますか。<span class="se">SE：低いドローン音＋カチッ</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">B-2</span><span class="tc">0:02–0:05</span></td>
+            <td class="vis"><em>同アングルのまま。</em>両手がフレームインし、パキパキと3回に分けて展開。最後の1関節が決まった瞬間にストップモーション＋軽いフラッシュ。</td>
+            <td class="tel">答え：ノートPCスタンド<span class="sm">ストップした瞬間に合わせてドン</span></td>
+            <td class="nar">正解は、ノートPCスタンド。<span class="se">SE：カチッ×3 → 決まりの一撃</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">B-3</span><span class="tc">0:05–0:08</span></td>
+            <td class="vis"><em>斜め前からの寄り。</em>15インチのノートPCをドンと載せ、上から手のひらで軽く押しても天板がブレない。脚のシリコンパッド部を一瞬インサート。</td>
+            <td class="tel">15インチでも、ぐらつかない<span class="sm">押した瞬間に振動ゼロの波形アイコンを添える</span></td>
+            <td class="nar">15インチのノートPCでも、多関節設計でしっかり支えます。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">B-4</span><span class="tc">0:08–0:11</span></td>
+            <td class="vis"><em>完全固定カメラのコマ撮り。</em>角度を1段ずつ上げていき、天板が段階的に立ち上がる。画面横に分度器グラフィックを重ねて数値をカウントアップ。</td>
+            <td class="tel">15° → 75°、8段階<span class="sm">数値はカウンター表示でパチパチ動かす</span></td>
+            <td class="nar">角度は15度から75度、8段階。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">B-5</span><span class="tc">0:11–0:14</span></td>
+            <td class="vis"><em>俯瞰から寄り。</em>中央ハブを回して脚を折り返し、そのままタブレット用の三脚形状へ。1カットで変形しきる（カット割りしない＝信頼性が出る）。</td>
+            <td class="tel">同じ1本が、こうなる<span class="sm">形が変わりきった瞬間に</span></td>
+            <td class="nar">回転ハブで、そのままタブレットスタンドに。<span class="se">SE：金属的なスライド音</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">B-6</span><span class="tc">0:14–0:17</span></td>
+            <td class="vis"><em>ハイスピード（120〜240fps）。</em>スマホがマグネットに引き寄せられ、バチンと吸着。等速に戻し、そのまま片手で握って自撮りアングルへ。</td>
+            <td class="tel">そして、ハンドグリップにもなる<span class="sm">吸着の瞬間に青いリング状のエフェクト</span></td>
+            <td class="nar">強力マグネットでワンタッチ。持ち手にもなります。<span class="se">SE：バチッ（低域を強調）</span></td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">B-7</span><span class="tc">0:17–0:20</span></td>
+            <td class="vis"><em>早回し。</em>畳んで棒状に戻し、ジャケットのポケットへスッと差す。黒背景の商品単体カットに切り替わり、CTAが出る。</td>
+            <td class="tel">スタンド3つ、もういらない<span class="sm">CTA：詳しくはこちら ▶</span></td>
+            <td class="nar">スマホも、タブレットも、ノートPCも。これ1本で。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══ パターンC ══ -->
+  <section id="pat-c">
+    <div class="head">
+      <div class="badge">C</div>
+      <div>
+        <div class="sub">UGC・レビュー型</div>
+        <h2>「ちょっと聞いて、今年イチの買い物かも」</h2>
+      </div>
+    </div>
+    <p class="aim"><b>狙い：</b>広告に見えない入り方をする。手持ち・生活感のある部屋・言い切らない口語で、友達のおすすめとして届ける。<b>途中の「え、これもいけるの？」という発見のリアクション</b>が山場。三脚を使わず、あえて手ブレを残す。</p>
+    <div class="facts">
+      <span><b>尺</b> 30秒</span><span><b>主ターゲット</b> SNS経由の20〜35歳</span><span><b>トーン</b> 手持ち・自然光・BGMは小さめ</span><span><b>テロップ</b> 全編に話し言葉の字幕を入れる</span>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <colgroup><col class="c-cut"><col class="c-vis"><col class="c-tel"><col class="c-nar"></colgroup>
+        <thead><tr><th>カット</th><th>映像のイメージ</th><th>テロップ</th><th>セリフ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cut"><span class="no">C-1</span><span class="tc">0:00–0:03</span></td>
+            <td class="vis"><em>インカメ手持ち・自撮り。</em>部屋着、少し前のめりでカメラに近づく。背景は生活感のある自室。手ブレはそのまま残す。</td>
+            <td class="tel">今年イチの買い物、聞いて<span class="sm">手書き風フォント・画面上部・少し傾ける</span></td>
+            <td class="nar">ちょっと待って。これ、マジで買ってよかったやつ。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-2</span><span class="tc">0:03–0:07</span></td>
+            <td class="vis"><em>カメラを反転して机へ。</em>ノートPC直置きで猫背になっている様子を自分で撮る。ちょっと雑なパン。</td>
+            <td class="tel">私の机、こうだったんだけど<span class="sm">「肩バキバキ」を吹き出しで追加</span></td>
+            <td class="nar">ずっとこの姿勢で作業してて、肩がバキバキだったのね。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-3</span><span class="tc">0:07–0:11</span></td>
+            <td class="vis"><em>手元アップ。</em>畳んだ状態をカメラに近づけて見せ、その場でパキパキ開く。「ほら」と言いながら少し画面が揺れる。</td>
+            <td class="tel">棒みたいだけど、開くとこう<span class="sm">開いた瞬間に「！」を添える</span></td>
+            <td class="nar">これ。棒みたいなんだけど、開くとPCスタンドになるの。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-4</span><span class="tc">0:11–0:15</span></td>
+            <td class="vis"><em>斜め上から。</em>実際にノートPCを載せ、高さを2段階カチカチ変えてみせる。指で段の刻みをなぞる。</td>
+            <td class="tel">高さ8段階。私は4段目<span class="sm">段の刻みに矢印グラフィック</span></td>
+            <td class="nar">高さが8段階あって、私は下から4段目がちょうどいい。目線が上がるだけで全然違う。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-5</span><span class="tc">0:15–0:19</span></td>
+            <td class="vis"><em>顔インサート → 手元。</em>「ここからがすごくて」と言いながらハブを回してタブレットスタンドに変形、タブレットを載せる。少し驚いた表情を挟む。</td>
+            <td class="tel">え、iPadもいけるの？<span class="sm">吹き出し風・跳ねるアニメーション</span></td>
+            <td class="nar">しかもこれ、回すとタブレットスタンドにもなるの。え、便利すぎない？</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-6</span><span class="tc">0:19–0:24</span></td>
+            <td class="vis"><em>いちばん寄る。</em>スマホをマグネットにバチッと付け、そのまま片手で握って動画を見る／自撮りの角度に構える。ベッドに寝転がるカットを一瞬インサート。</td>
+            <td class="tel">推しポイントはここ<span class="sm">「マグネットでバチッ」を効果音風テロップで</span></td>
+            <td class="nar">で、いちばん好きなのがここ。スマホがマグネットでバチッと付いて、そのまま持ち手になる。寝ながら動画、最強。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-7</span><span class="tc">0:24–0:27</span></td>
+            <td class="vis"><em>手持ち。</em>畳んでポーチに入れ、そのままカフェで開いて使うカットにジャンプカット。テーブルの上が広く見えるように引きで。</td>
+            <td class="tel">たたむとこのサイズ<span class="sm">手のひらとの対比が分かる画角で</span></td>
+            <td class="nar">たたむとこのサイズだから、最近カフェにも持っていってる。</td>
+          </tr>
+          <tr>
+            <td class="cut"><span class="no">C-8</span><span class="tc">0:27–0:30</span></td>
+            <td class="vis"><em>自撮りに戻る。</em>笑顔で画面下を指差す。商品を片手に持ったまま。最後にCTAだけ被せる。</td>
+            <td class="tel">リンク貼っとくね<span class="sm">CTA：詳しくはこちら ▶</span></td>
+            <td class="nar">気になったら、下のリンクから見てみて。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══ 付録 ══ -->
+  <section id="shots">
+    <h2 class="apx">撮影素材リスト・入稿前チェック</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>撮っておく素材</h3>
+        <p class="note">この12カットが揃えばA・B・Cの3本すべてを組めます。変形と吸着は必ずワンカット長回しで。</p>
+        <ol class="shots">
+          <li>畳んだ状態の極アップ／黒背景で回転<span>B-1の正体不明カット。ハイライトが流れるようにライトを動かす</span></li>
+          <li>展開のワンカット長回し（手元）<span>カット割りしないことが信頼性になる。3テイク以上</span></li>
+          <li>15インチノートPC設置（横・斜め・俯瞰）<span>押しても揺れないカットを含める</span></li>
+          <li>角度8段階の変化／完全固定カメラ<span>コマ撮りにも早回しにも使える素材にする</span></li>
+          <li>ハブ回転 → タブレットモードへの変形<span>回転角の実測値を撮影時にメモ</span></li>
+          <li>マグネット吸着のハイスピード<span>120〜240fps。吸い寄せられる距離感が出る画角で</span></li>
+          <li>ハンドグリップ使用（自撮り／寝ながら動画）<span>縦持ち・横持ちの両方</span></li>
+          <li>放熱の見せカット<span>底面の隙間に手を入れる／ティッシュが揺れる</span></li>
+          <li>収納 → ポーチ・ポケットへ<span>手のひらとの大きさ比較を必ず1カット</span></li>
+          <li>使用シーン（カフェ・ベッド・旅先）<span>自然光。生活感を残す</span></li>
+          <li>姿勢のBefore／After<span>同アングル・同ポジションで固定撮影。三脚必須</span></li>
+          <li>白背景の商品単体ブツ撮り<span>CTA用。ゆっくり回転させる</span></li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3>入稿前に確認すること</h3>
+        <p class="note">数値と材質は提供画像から拾っています。実物と食い違うとそのまま広告表現のリスクになるため、テロップに載せる前に確定させてください。</p>
+        <ul class="checks">
+          <li><b>材質の表記ゆれ</b>提供画像は「高品質ABS樹脂製」、商品ページURLは「アルミ合金（aluminum alloy）」。台本では材質に触れていませんが、テロップに出す場合は実物に合わせて統一を。</li>
+          <li><b>回転角の表記ゆれ</b>画像①は「180°回転ハブ」、画像②は「360°回転」。B-5とA-5で言及するため、どちらが正しいか要確定。</li>
+          <li><b>効果の言い切りを避ける</b>「肩こりが治る」「疲れない」等の身体への効能は断定しない。「目線が上がる」「姿勢が変わる」など事実ベースの表現に留めています。</li>
+          <li><b>実測の裏取り</b>8段階／15°〜75°／2〜6cm／15インチ対応。テロップで数値を出すカット（A-4、A-6、B-3、B-4、C-4）は実測と一致させる。</li>
+          <li><b>UGC表現の扱い</b>Cは演者の体験談形式。実際に使用した人に演じてもらうか、体験に基づかない断定を避ける構成に調整を。</li>
+          <li><b>ミュート耐性</b>3本とも、音声を切って通しで確認。テロップだけで意味が通らないカットがあれば文字を足す。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    A／B／Cは同一キャンペーン内の別広告として同時配信し、3秒視聴率・ThruPlay・CTRで判定するのが前提です。勝ち筋が出たら、そのフックのまま冒頭3秒だけを差し替えた派生を追加してください。
+  </footer>
+</div>
