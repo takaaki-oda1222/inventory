@@ -71,8 +71,8 @@ def load_ads(paths, config: dict, log: RunLog, manual: bool = False) -> list[Ad]
                 continue  # 空行は無視
             rec = {hmap[k]: v for k, v in raw.items() if k in hmap}
             rid = f"{p.name}:{i}"
-            if manual and is_unknown(rec.get("ad_url")):
-                log.error("load", str(p), i, "手動登録: ad_url が空のため行をスキップ")
+            if manual and is_unknown(rec.get("ad_url")) and is_unknown(rec.get("landing_url")):
+                log.error("load", str(p), i, "手動登録: ad_url と landing_url が両方空のため行をスキップ")
                 continue
             ad = Ad(record_id=rid, source=str(p), source_row=i,
                     checked_at=str(rec.get("checked_at") or loaded_at),

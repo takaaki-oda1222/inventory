@@ -3,7 +3,7 @@
 | フォルダ | 置くもの | 形式 |
 |---|---|---|
 | `ads/` | 広告リサーチツールからエクスポートした広告データ | .csv / .json（複数可） |
-| `manual/` | 手動登録。`ad_url` 列だけ埋めれば可（他は空欄＝「不明」） | .csv（`templates/manual_ads_template.csv` と同じ列） |
+| `manual/` | 手動登録。`ad_url`（広告URL）か `landing_url`（販売ページURL）のどちらか1つ埋めれば可（他は空欄＝「不明」） | .csv（`templates/manual_ads_template.csv` と同じ列） |
 | `aliexpress/` | AliExpress 調査結果 | .csv（`templates/aliexpress_template.csv`） |
 | `compliance/` | 法規・安全の手動レビュー | .csv（`templates/compliance_review_template.csv`） |
 

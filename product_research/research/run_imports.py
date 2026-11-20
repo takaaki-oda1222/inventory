@@ -91,7 +91,7 @@ def _print(res: dict):
     for k, v in res["summary"].items():
         print(f"  {k}: {v}")
     for i, p in enumerate(res["top"], 1):
-        name = p.rep.product_name if p.rep.product_name != "不明" else p.rep.ad_url
+        name = next((v for v in (p.rep.product_name, p.rep.ad_url, p.rep.landing_url) if v != "不明"), "不明")
         print(f"  {i:>2}. [{p.decision}] {name}  score={p.score['total']}")
     print("  → top10.csv / report.html / errors.csv / missing_values.csv を確認してください")
 

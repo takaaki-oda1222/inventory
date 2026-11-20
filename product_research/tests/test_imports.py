@@ -19,6 +19,7 @@ https://ads.example.com/real/1,,,,,,,,,,
 https://ads.example.com/manual/11,Neck Fan,,450,,,,,,,
 ,Row Without URL,,,,,,,,,
 ,,,,,,,,,,
+,,https://shop.example.com/products/pen?fbclid=abc&utm_source=fb,,,,,,,,
 https://ads.example.com/manual/12,Mini Waffle Maker,https://waffle.example.com/p/mini,2000,2026-10-20,video,en,shopify,29.99,WaffleCo,2026-11-20T10:00:00+09:00
 """
 SOURCING_CSV = """product_name,ad_url,landing_url,aliexpress_url,unit_cost,shipping_cost,currency,match_score,available,checked_at,checked_by,note
@@ -114,5 +115,9 @@ class RealImportTest(unittest.TestCase):
         self.assertIn("https://ads.example.com/real/3", excluded)
 
         errors = " ".join(r["message"] for r in self.rows(out, "errors.csv"))
-        self.assertIn("ad_url が空", errors)
-        self.assertEqual(res["summary"]["手動登録"], 4)  # 6行中、空行1件とURLなし1件を除く
+        self.assertIn("ad_url と landing_url が両方空", errors)
+        self.assertEqual(res["summary"]["手動登録"], 5)  # 7行中、空行1件とURLなし1件を除く
+        lp_only = [r for r in self.rows(out, "all_candidates.csv") if "shop.example.com" in r["landing_url"]]
+        self.assertEqual(len(lp_only), 1)
+        self.assertEqual(lp_only[0]["ad_url"], UNKNOWN)
+        self.assertEqual(lp_only[0]["decision"], "要確認")
