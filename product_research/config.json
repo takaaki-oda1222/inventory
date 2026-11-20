@@ -6,7 +6,8 @@
     "languages": ["en"],
     "platforms": ["shopify", "woocommerce"],
     "min_likes": 600,
-    "allow_unknown": false
+    "allow_unknown": false,
+    "manual_allow_unknown": true
   },
   "normalize": {
     "media_types": {"video": ["video", "動画", "videos", "reel", "reels"], "image": ["image", "画像", "photo", "picture"], "carousel": ["carousel", "カルーセル"]},

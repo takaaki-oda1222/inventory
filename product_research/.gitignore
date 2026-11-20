@@ -1,3 +1,6 @@
 output/
 __pycache__/
 *.pyc
+# 実データはリポジトリに含めない（フォルダ構成と説明のみ管理）
+imports/*/*
+!imports/*/.gitkeep

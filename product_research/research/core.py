@@ -56,6 +56,7 @@ class Ad:
     sale_price: float | str = UNKNOWN
     ad_text: str = UNKNOWN
     page_name: str = UNKNOWN
+    entry_type: str = "export"  # export=ツールのエクスポート / manual=手動登録（URLのみ可）
 
 
 @dataclass

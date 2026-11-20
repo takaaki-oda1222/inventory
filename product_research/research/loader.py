@@ -46,7 +46,8 @@ def read_rows(path: Path) -> list[dict]:
     raise ValueError(f"未対応のファイル形式: {suffix}（.csv / .json のみ）")
 
 
-def load_ads(paths, config: dict, log: RunLog) -> list[Ad]:
+def load_ads(paths, config: dict, log: RunLog, manual: bool = False) -> list[Ad]:
+    """manual=True は手動登録テンプレート。ad_url 以外は空欄で良く、空欄は「不明」として扱う。"""
     aliases = config["column_aliases"]
     norm = config["normalize"]
     ads: list[Ad] = []
@@ -62,14 +63,20 @@ def load_ads(paths, config: dict, log: RunLog) -> list[Ad]:
         unmapped = sorted(h for h in headers if h not in hmap)
         if unmapped:
             log.error("load", str(p), None, f"未対応の列（無視）: {', '.join(unmapped)}")
-        log.source("ads", str(p.resolve()), len(rows))
         loaded_at = now_iso()
+        n_before = len(ads)
 
         for i, raw in enumerate(rows, start=2 if p.suffix.lower() == ".csv" else 1):
+            if all(is_unknown(v) for v in raw.values()):
+                continue  # 空行は無視
             rec = {hmap[k]: v for k, v in raw.items() if k in hmap}
             rid = f"{p.name}:{i}"
+            if manual and is_unknown(rec.get("ad_url")):
+                log.error("load", str(p), i, "手動登録: ad_url が空のため行をスキップ")
+                continue
             ad = Ad(record_id=rid, source=str(p), source_row=i,
-                    checked_at=str(rec.get("checked_at") or loaded_at))
+                    checked_at=str(rec.get("checked_at") or loaded_at),
+                    entry_type="manual" if manual else "export")
             for fname, value in rec.items():
                 if fname == "checked_at":
                     continue
@@ -96,4 +103,6 @@ def load_ads(paths, config: dict, log: RunLog) -> list[Ad]:
                 if is_unknown(getattr(ad, fname)):
                     log.miss(rid, fname, str(p), i)
             ads.append(ad)
+        # 件数は実際に読み込んだ行（空行・スキップ行を除く）
+        log.source("manual_ads" if manual else "ads", str(p.resolve()), len(ads) - n_before)
     return ads

@@ -16,7 +16,7 @@ TOP_COLUMNS = [
     "aliexpress_url", "unit_cost", "shipping_cost", "total_cost", "match_score", "sourcing_checked_at",
     "competitor_price", "recommended_price", "est_gross_profit", "est_margin_rate", "price_candidates",
     "appeal_score", "compliance_status", "compliance_auto", "compliance_reviewer", "compliance_checked_at",
-    "reasons", "source", "checked_at",
+    "reasons", "source", "checked_at", "entry_type",
 ]
 
 
@@ -58,6 +58,7 @@ def product_row(rank, p: Product) -> dict:
         "reasons": " / ".join(p.decision_reasons) or "-",
         "source": " | ".join(dict.fromkeys(f"{a.source}:{a.source_row}" for a in p.ads)),
         "checked_at": rep.checked_at,
+        "entry_type": "/".join(sorted({a.entry_type for a in p.ads})),
     }
 
 
@@ -171,6 +172,7 @@ def write_outputs(out_dir: Path, products: list[Product], top: list[Product], ex
     write_csv(out_dir / "errors.csv", log.errors, ["stage", "location", "row", "message", "logged_at"])
 
     summary = {"読込広告": sum(s["rows"] for s in log.sources if s["kind"] == "ads"),
+               "手動登録": sum(s["rows"] for s in log.sources if s["kind"] == "manual_ads"),
                "条件通過": sum(len(p.ads) for p in products), "重複除去後": len(products),
                "テスト候補": sum(p.decision == "テスト候補" for p in products),
                "要確認": sum(p.decision == "要確認" for p in products),

@@ -22,17 +22,25 @@ from .sourcing import attach_sourcing, load_sourcing
 BASE = Path(__file__).resolve().parent.parent
 
 
+def _as_list(v):
+    if not v:
+        return []
+    return [v] if isinstance(v, (str, Path)) else list(v)
+
+
 def run(ads_paths, config_path=BASE / "config.json", sourcing_path=None, review_path=None,
-        out_dir=None) -> dict:
+        out_dir=None, manual_paths=None) -> dict:
+    """sourcing_path / review_path は1ファイルまたはファイルのリスト。"""
     cfg = load_config(config_path)
     log = RunLog()
     out_dir = Path(out_dir or BASE / "output" / datetime.now().strftime("%Y%m%d_%H%M%S"))
 
-    ads = load_ads(ads_paths, cfg, log)
+    ads = load_ads(ads_paths, cfg, log) + load_ads(_as_list(manual_paths), cfg, log, manual=True)
     passed, excluded_ads = apply_filters(ads, cfg)
     products = dedupe(passed, cfg)
-    attach_sourcing(products, load_sourcing(sourcing_path, log), cfg, log)
-    reviews = load_reviews(review_path, log)
+    sourcing_rows = [r for sp in _as_list(sourcing_path) for r in load_sourcing(sp, log)]
+    attach_sourcing(products, sourcing_rows, cfg, log)
+    reviews = [r for rp in _as_list(review_path) for r in load_reviews(rp, log)]
     for p in products:
         evaluate_pricing(p, cfg)
         evaluate_appeal(p, cfg)
@@ -41,8 +49,9 @@ def run(ads_paths, config_path=BASE / "config.json", sourcing_path=None, review_
         score(p, cfg)
         decide(p, cfg)
     top = rank(products, cfg.get("top_n", 10))
-    args = {"ads": [str(a) for a in ads_paths], "config": str(config_path),
-            "sourcing": str(sourcing_path), "review": str(review_path)}
+    args = {"ads": [str(a) for a in ads_paths], "manual": [str(m) for m in _as_list(manual_paths)],
+            "config": str(config_path), "sourcing": [str(s) for s in _as_list(sourcing_path)],
+            "review": [str(r) for r in _as_list(review_path)]}
     summary = write_outputs(out_dir, products, top, excluded_ads, log, cfg, args)
     return {"out_dir": out_dir, "summary": summary, "top": top, "products": products,
             "excluded_ads": excluded_ads, "log": log}

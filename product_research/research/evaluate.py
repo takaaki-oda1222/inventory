@@ -92,11 +92,14 @@ def load_reviews(path, log: RunLog) -> list[dict]:
 def _match_review(p: Product, reviews: list[dict], cfg: dict):
     stop = cfg["dedupe"].get("stopwords", [])
     urls = {normalize_url(a.landing_url) for a in p.ads} - {""}
+    ad_urls = {normalize_url(a.ad_url) for a in p.ads} - {""}
     names = {normalize_name(a.product_name, stop) for a in p.ads} - {""}
     for r in reviews:
-        if urls and normalize_url(r.get("landing_url", "")) in urls:
+        if urls and normalize_url(r.get("landing_url") or "") in urls:
             return r
-        n = normalize_name(r.get("product_name", ""), stop)
+        if ad_urls and normalize_url(r.get("ad_url") or "") in ad_urls:
+            return r
+        n = normalize_name(r.get("product_name") or "", stop)
         if any(names_match(n, x, cfg["dedupe"]["name_similarity"]) for x in names):
             return r
     return None
@@ -176,6 +179,11 @@ def score(p: Product, cfg: dict):
 def decide(p: Product, cfg: dict):
     labels = {"reaction": "Dropispy反応", "sourcing": "仕入れ可否", "compliance": "法規安全"}
     reasons = []
+    if all(a.entry_type == "manual" for a in p.ads):
+        unknown = [k for k in ("product_name", "likes", "start_date", "landing_url", "media_type",
+                               "language", "platform") if is_unknown(getattr(p.rep, k))]
+        if unknown:
+            reasons.append(f"手動登録: 未取得項目あり({', '.join(unknown)})")
     for k, v in p.gates.items():
         if v != PASS:
             reasons.append(f"{labels[k]}: {v}")

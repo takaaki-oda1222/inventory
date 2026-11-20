@@ -13,7 +13,7 @@ from .core import (FAIL, PASS, REVIEW, UNKNOWN, Product, RunLog, is_unknown,
                    similarity)
 from .loader import read_rows
 
-SOURCING_COLUMNS = ["product_name", "landing_url", "aliexpress_url", "unit_cost", "shipping_cost",
+SOURCING_COLUMNS = ["product_name", "ad_url", "landing_url", "aliexpress_url", "unit_cost", "shipping_cost",
                     "currency", "match_score", "available", "checked_at", "checked_by", "note"]
 
 
@@ -46,10 +46,13 @@ def load_sourcing(path, log: RunLog) -> list[dict]:
 def _find(product: Product, rows: list[dict], cfg: dict):
     stop = cfg["dedupe"].get("stopwords", [])
     urls = {normalize_url(a.landing_url) for a in product.ads} - {""}
+    ad_urls = {normalize_url(a.ad_url) for a in product.ads} - {""}
     names = {normalize_name(a.product_name, stop) for a in product.ads} - {""}
     best, best_sim = None, 0.0
     for r in rows:
         if urls and normalize_url(r["landing_url"]) in urls:
+            return r
+        if ad_urls and normalize_url(r["ad_url"]) in ad_urls:
             return r
         n = normalize_name(r["product_name"], stop)
         sim = max((1.0 if names_match(n, x, 1.0) else similarity(n, x) for x in names), default=0.0)

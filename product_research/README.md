@@ -5,8 +5,22 @@
 
 ## 使い方
 
+### 実データ（imports/ → output/real/）
 ```bash
 cd product_research
+python3 -m research.run_imports --init   # 初回のみ: imports/ とテンプレートを用意
+# imports/ads/ にエクスポートCSV/JSON、または imports/manual/manual_ads.csv に広告URLを記入
+python3 -m research.run_imports          # → output/real/YYYYMMDD_HHMMSS/
+```
+詳細は [imports/README.md](imports/README.md)。`imports/` の中身は git 管理外です。
+
+### サンプル（sample_data/ → output/sample/）
+```bash
+python3 -m research.run_imports --sample
+```
+
+### 任意のファイルを直接指定
+```bash
 python3 -m research.pipeline \
   --ads sample_data/ads_sample.csv sample_data/ads_sample.json \
   --sourcing sample_data/aliexpress_sample.csv \
@@ -33,9 +47,12 @@ product_research/
 │   ├── sourcing.py          AliExpress 調査結果の照合（仕入れ可否ゲート）
 │   ├── evaluate.py          価格候補・想定粗利・訴求力・法規安全・3条件判定・加点・順位
 │   ├── report.py            top10.csv / report.html / ログ類の出力
-│   └── pipeline.py          実行エントリ（CLI）
+│   ├── pipeline.py          パイプライン本体／ファイル直接指定CLI
+│   └── run_imports.py       実データ・サンプル実行コマンド
+├── imports/                 実データ置き場（ads/ manual/ aliexpress/ compliance/、中身はgit管理外）
+├── templates/               手動登録・AliExpress・法規レビューのCSVテンプレート
 ├── sample_data/             検証用サンプル（すべて架空データ、URLは example ドメイン）
-└── tests/test_pipeline.py   単体＋E2Eテスト
+└── tests/                   単体＋E2E（サンプル）＋実データ取り込みテスト
 ```
 
 処理の流れ: 読込 → 検索条件フィルタ → 重複除去 → AliExpress照合 → 価格/粗利 → 訴求力 → 法規安全 → 3条件ゲート → 加点 → 判定 → TOP10出力

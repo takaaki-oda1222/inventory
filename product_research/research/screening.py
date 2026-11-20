@@ -9,6 +9,8 @@ def apply_filters(ads: list[Ad], cfg: dict) -> tuple[list[Ad], list[dict]]:
     allow_unknown=false の場合、判定に必要な値が不明な広告は除外し理由を残す。"""
     f = cfg["filters"]
     allow_unknown = f.get("allow_unknown", False)
+    # 手動登録（URLのみ等）は不明値で除外せず、後段で「要確認」として扱う
+    manual_allow_unknown = f.get("manual_allow_unknown", True)
     checks = [
         ("media_type", lambda v: v in f["media_types"], "メディア形式"),
         ("language", lambda v: v in f["languages"], "言語"),
@@ -21,7 +23,7 @@ def apply_filters(ads: list[Ad], cfg: dict) -> tuple[list[Ad], list[dict]]:
         for attr, ok, label in checks:
             v = getattr(ad, attr)
             if is_unknown(v):
-                if not allow_unknown:
+                if not (allow_unknown or (ad.entry_type == "manual" and manual_allow_unknown)):
                     reasons.append(f"{label}: 不明")
             elif not ok(v):
                 reasons.append(f"{label}: 条件外({v})")
@@ -40,10 +42,11 @@ def dedupe(ads: list[Ad], cfg: dict) -> list[Product]:
     groups: list[dict] = []
     for ad in ads:
         key_url = normalize_url(ad.landing_url)
+        key_ad = normalize_url(ad.ad_url)
         key_name = normalize_name(ad.product_name, stop)
         hit = None
         for g in groups:
-            if key_url and key_url in g["urls"]:
+            if (key_url and key_url in g["urls"]) or (key_ad and key_ad in g["ad_urls"]):
                 hit = g
                 break
             if key_name and any(names_match(key_name, n, d["name_similarity"], d.get("token_containment", True))
@@ -51,10 +54,12 @@ def dedupe(ads: list[Ad], cfg: dict) -> list[Product]:
                 hit = g
                 break
         if hit is None:
-            hit = {"urls": set(), "names": set(), "ads": []}
+            hit = {"urls": set(), "ad_urls": set(), "names": set(), "ads": []}
             groups.append(hit)
         if key_url:
             hit["urls"].add(key_url)
+        if key_ad:
+            hit["ad_urls"].add(key_ad)
         if key_name:
             hit["names"].add(key_name)
         hit["ads"].append(ad)
