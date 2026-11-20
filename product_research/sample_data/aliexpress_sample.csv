@@ -1,0 +1,16 @@
+product_name,landing_url,aliexpress_url,unit_cost,shipping_cost,currency,match_score,available,checked_at,checked_by,note
+Posture Corrector,,https://www.aliexpress.example/item/1001.html,4.20,2.10,USD,90,yes,2026-11-19T21:00:00+09:00,担当A,同型・同色あり
+Pet Hair Remover Roller,,https://www.aliexpress.example/item/1003.html,2.80,1.90,USD,95,yes,2026-11-19T21:00:00+09:00,担当A,
+Sunset Projection Lamp,,https://www.aliexpress.example/item/1004.html,5.50,3.20,USD,85,yes,2026-11-19T21:00:00+09:00,担当A,US倉庫あり
+Cloud Slides,,https://www.aliexpress.example/item/1005.html,6.90,4.00,USD,80,yes,2026-11-19T21:00:00+09:00,担当A,サイズ展開要確認
+Car Seat Gap Filler,,https://www.aliexpress.example/item/1006.html,2.10,1.50,USD,92,yes,2026-11-19T21:00:00+09:00,担当A,
+Ice Face Roller,,https://www.aliexpress.example/item/1007.html,3.10,,USD,88,yes,2026-11-19T21:00:00+09:00,担当A,送料未確認
+Portable Blender,,https://www.aliexpress.example/item/1008.html,9.80,4.50,USD,75,yes,2026-11-19T21:00:00+09:00,担当A,バッテリー航空便制限あり
+Tactical Pocket Knife,,https://www.aliexpress.example/item/1009.html,5.00,2.00,USD,90,yes,2026-11-19T21:00:00+09:00,担当A,
+Magnetic Phone Mount,,https://www.aliexpress.example/item/1010.html,2.40,1.60,USD,93,yes,2026-11-19T21:00:00+09:00,担当A,
+Self Cleaning Water Bottle,,https://www.aliexpress.example/item/1011.html,11.50,5.00,USD,55,yes,2026-11-19T21:00:00+09:00,担当A,類似品のみ
+Foldable Laptop Stand,,https://www.aliexpress.example/item/1012.html,5.80,3.00,USD,90,no,2026-11-19T21:00:00+09:00,担当A,販売終了
+Reusable Lint Brush,,https://www.aliexpress.example/item/1013.html,1.20,1.10,USD,95,yes,2026-11-19T21:00:00+09:00,担当A,
+Under Bed Storage Bag,,https://www.aliexpress.example/item/1014.html,20.00,9.00,CNY,85,yes,2026-11-19T21:00:00+09:00,担当A,人民元表示
+Shower Head Filter,,https://www.aliexpress.example/item/1015.html,4.60,2.40,USD,87,yes,2026-11-19T21:00:00+09:00,担当A,
+Heated Eye Massager,,https://www.aliexpress.example/item/3003.html,12.00,4.00,USD,82,yes,2026-11-19T21:00:00+09:00,担当A,

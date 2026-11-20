@@ -1,0 +1,63 @@
+{
+  "_comment": "REVOLUTION式 商品リサーチ設定。値を変更すれば検索条件・評価基準を調整できます。",
+  "top_n": 10,
+  "filters": {
+    "media_types": ["video"],
+    "languages": ["en"],
+    "platforms": ["shopify", "woocommerce"],
+    "min_likes": 600,
+    "allow_unknown": false
+  },
+  "normalize": {
+    "media_types": {"video": ["video", "動画", "videos", "reel", "reels"], "image": ["image", "画像", "photo", "picture"], "carousel": ["carousel", "カルーセル"]},
+    "languages": {"en": ["en", "english", "英語", "en-us", "en-gb"], "ja": ["ja", "japanese", "日本語"], "fr": ["fr", "french", "フランス語"], "de": ["de", "german", "ドイツ語"], "es": ["es", "spanish", "スペイン語"]},
+    "platforms": {"shopify": ["shopify"], "woocommerce": ["woocommerce", "woo commerce", "woo"]}
+  },
+  "column_aliases": {
+    "_comment": "実際のエクスポートファイルの列名をここに追加してください（大文字小文字・前後空白は無視）。",
+    "product_name": ["product_name", "product", "商品名", "title", "ad_title"],
+    "ad_url": ["ad_url", "広告url", "ad_link", "ad link", "post_url"],
+    "start_date": ["start_date", "掲載開始日", "first_seen", "ad_delivery_start_time", "creation_date"],
+    "likes": ["likes", "いいね", "いいね数", "reactions", "like_count"],
+    "comments": ["comments", "コメント", "コメント数", "comment_count"],
+    "shares": ["shares", "シェア", "シェア数", "share_count"],
+    "landing_url": ["landing_url", "販売ページurl", "store_url", "shop_url", "website"],
+    "media_type": ["media_type", "メディア", "type", "format", "広告形式"],
+    "language": ["language", "言語", "lang"],
+    "platform": ["platform", "プラットフォーム", "ecommerce_platform", "cms", "shop_platform"],
+    "sale_price": ["sale_price", "販売価格", "store_price", "price"],
+    "ad_text": ["ad_text", "広告文", "text", "body", "description"],
+    "page_name": ["page_name", "ページ名", "advertiser", "shop_name"],
+    "checked_at": ["checked_at", "確認日時", "collected_at", "scraped_at"]
+  },
+  "dedupe": {
+    "name_similarity": 0.85,
+    "token_containment": true,
+    "stopwords": ["the", "a", "an", "new", "best", "original", "premium", "2024", "2025", "2026", "pro", "for", "with"]
+  },
+  "sourcing": {
+    "min_match_score": 70,
+    "name_similarity": 0.8
+  },
+  "pricing": {
+    "currency": "USD",
+    "markups": [2.5, 3.0, 4.0],
+    "price_ending": 0.99,
+    "payment_fee_rate": 0.04,
+    "est_cpa": 12.0,
+    "min_margin_rate": 0.25
+  },
+  "gates": {
+    "reaction_min_likes": 600
+  },
+  "compliance": {
+    "ng_keywords": ["knife", "knives", "blade", "taser", "stun gun", "pepper spray", "gun", "weapon", "cbd", "thc", "vape", "e-cigarette", "nicotine", "fat burner", "weight loss pill", "diet pill", "supplement", "prescription", "contact lens", "drone", "laser pointer", "lock pick", "replica", "brand inspired"],
+    "review_keywords": ["battery", "batteries", "rechargeable", "lithium", "usb", "electric", "heating", "heated", "baby", "kids", "child", "toy", "skin", "cosmetic", "serum", "cream", "teeth", "whitening", "medical", "pain relief", "posture", "massager", "food", "kitchen", "pet food", "magnet", "led", "laser", "hair removal", "car seat"]
+  },
+  "scoring": {
+    "weights": {"appeal": 40, "margin": 25, "match": 15, "longevity": 10, "ad_count": 10},
+    "appeal_likes_ref": 10000,
+    "longevity_days_ref": 60,
+    "ad_count_ref": 5
+  }
+}

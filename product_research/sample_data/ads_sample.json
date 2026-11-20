@@ -1,0 +1,12 @@
+{
+  "ads": [
+    {"product_name": "Pet Hair Remover Roller - Reusable", "ad_url": "https://ads.example.com/ad/3001", "start_date": "2026-09-20", "likes": "2.1k", "comments": 120, "shares": 300,
+     "landing_url": "https://furaway.example.com/products/roller", "media_type": "Video", "language": "English", "platform": "Shopify", "sale_price": 24.99, "page_name": "FurAway", "checked_at": "2026-11-20T09:05:00+09:00"},
+    {"product_name": "Sunset Lamp", "ad_url": "https://ads.example.com/ad/3002", "start_date": "2026-10-01", "likes": 3300, "comments": 210,
+     "landing_url": "https://sunsetvibes.example.com/products/sunset-projection-lamp", "media_type": "video", "language": "en", "platform": "shopify", "sale_price": 32.99, "page_name": "SunsetVibes", "checked_at": "2026-11-20T09:05:00+09:00"},
+    {"product_name": "Heated Eye Massager", "ad_url": "https://ads.example.com/ad/3003", "start_date": "2026-08-01", "likes": 4800, "comments": 260, "shares": 410,
+     "landing_url": "https://relaxeyes.example.com/products/eye-massager", "media_type": "video", "language": "en", "platform": "woocommerce", "sale_price": 59.99, "page_name": "RelaxEyes", "checked_at": "2026-11-20T09:05:00+09:00"},
+    {"product_name": "Fat Burner Belt Supplement Kit", "ad_url": "https://ads.example.com/ad/3004", "start_date": "2026-09-10", "likes": 5100,
+     "landing_url": "https://slimfast.example.com/products/kit", "media_type": "video", "language": "en", "platform": "shopify", "page_name": "SlimKit", "checked_at": "2026-11-20T09:05:00+09:00"}
+  ]
+}
